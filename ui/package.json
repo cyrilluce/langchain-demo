@@ -1,0 +1,14 @@
+{
+  "name": "ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --version || echo 'install bun first'",
+    "start": "bun dev"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
