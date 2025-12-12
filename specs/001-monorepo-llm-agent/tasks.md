@@ -27,9 +27,9 @@ This is a **web application** monorepo:
 
 **Purpose**: Project initialization and basic monorepo structure
 
-- [ ] T001 Create top-level README.md with setup instructions
-- [ ] T002 [P] Initialize Python server structure in server/
-- [ ] T003 [P] Initialize TypeScript UI structure in ui/
+- [X] T001 Create top-level README.md with setup instructions
+- [X] T002 [P] Initialize Python server structure in server/
+- [X] T003 [P] Initialize TypeScript UI structure in ui/
 
 ---
 
@@ -39,12 +39,12 @@ This is a **web application** monorepo:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create server/requirements.txt with FastAPI, langchain, langchain-community, dashscope dependencies
-- [ ] T005 Create server/app/**init**.py
-- [ ] T006 Create ui/package.json with React, TypeScript, Vite dependencies
-- [ ] T007 Create ui/tsconfig.json with TypeScript configuration
-- [ ] T008 [P] Create server/app/models.py with Pydantic schemas (PromptRequest, AgentResponse, ErrorResponse)
-- [ ] T009 [P] Create ui/src/types/index.ts with TypeScript interfaces (AgentRequest, AgentResponse, ErrorResponse, LoadingState)
+- [X] T004 Create server/requirements.txt with FastAPI, langchain, langchain-community, dashscope dependencies
+- [X] T005 Create server/app/**init**.py
+- [X] T006 Create ui/package.json with React, TypeScript, Vite dependencies
+- [X] T007 Create ui/tsconfig.json with TypeScript configuration
+- [X] T008 [P] Create server/app/models.py with Pydantic schemas (PromptRequest, AgentResponse, ErrorResponse)
+- [X] T009 [P] Create ui/src/types/index.ts with TypeScript interfaces (AgentRequest, AgentResponse, ErrorResponse, LoadingState)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -63,15 +63,15 @@ curl -X POST http://localhost:8000/agent -H "Content-Type: application/json" -d 
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Create server/app/config.py with environment variable handling (DASHSCOPE_API_KEY, model config)
-- [ ] T011 [P] [US1] Create server/app/agent.py with langchain/langgraph Aliyun integration
-- [ ] T012 [US1] Implement fallback logic in server/app/agent.py when credentials missing
-- [ ] T013 [US1] Create server/app/main.py with FastAPI app initialization
-- [ ] T014 [US1] Add CORS middleware to server/app/main.py (allow_origins=["*"])
-- [ ] T015 [US1] Implement POST /agent endpoint in server/app/main.py
-- [ ] T016 [US1] Add HTTP 503 error handling for LLM failures in server/app/main.py
-- [ ] T017 [US1] Implement GET /health endpoint in server/app/main.py
-- [ ] T018 [US1] Create server/README.md with installation and run instructions
+- [X] T010 [P] [US1] Create server/app/config.py with environment variable handling (DASHSCOPE_API_KEY, model config)
+- [X] T011 [P] [US1] Create server/app/agent.py with langchain/langgraph Aliyun integration
+- [X] T012 [US1] Implement fallback logic in server/app/agent.py when credentials missing
+- [X] T013 [US1] Create server/app/main.py with FastAPI app initialization
+- [X] T014 [US1] Add CORS middleware to server/app/main.py (allow_origins=["*"])
+- [X] T015 [US1] Implement POST /agent endpoint in server/app/main.py
+- [X] T016 [US1] Add HTTP 503 error handling for LLM failures in server/app/main.py
+- [X] T017 [US1] Implement GET /health endpoint in server/app/main.py
+- [X] T018 [US1] Create server/README.md with installation and run instructions
 
 **Checkpoint**: Server should be runnable via `uvicorn app.main:app` and respond to /agent requests
 
@@ -90,17 +90,17 @@ curl -X POST http://localhost:8000/agent -H "Content-Type: application/json" -d 
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Create ui/src/services/api.ts with fetch API and AbortController for 360s timeout
-- [ ] T020 [P] [US2] Implement error handling in ui/src/services/api.ts for HTTP 503 and timeout
-- [ ] T021 [US2] Create ui/src/App.tsx with state management (prompt, answer, loadingState, error)
-- [ ] T022 [US2] Implement input form in ui/src/App.tsx (textarea for prompt, submit button)
-- [ ] T023 [US2] Implement loading spinner UI in ui/src/App.tsx (disabled controls during loading)
-- [ ] T024 [US2] Implement answer display in ui/src/App.tsx
-- [ ] T025 [US2] Implement error display in ui/src/App.tsx (HTTP errors and timeout)
-- [ ] T026 [US2] Create ui/src/main.tsx with React root rendering
-- [ ] T027 [US2] Create ui/index.html as entry point
-- [ ] T028 [US2] Configure Vite in ui/package.json scripts (dev, build, preview)
-- [ ] T029 [US2] Create ui/README.md with installation and run instructions
+- [X] T019 [P] [US2] Create ui/src/services/api.ts with fetch API and AbortController for 360s timeout
+- [X] T020 [P] [US2] Implement error handling in ui/src/services/api.ts for HTTP 503 and timeout
+- [X] T021 [US2] Create ui/src/App.tsx with state management (prompt, answer, loadingState, error)
+- [X] T022 [US2] Implement input form in ui/src/App.tsx (textarea for prompt, submit button)
+- [X] T023 [US2] Implement loading spinner UI in ui/src/App.tsx (disabled controls during loading)
+- [X] T024 [US2] Implement answer display in ui/src/App.tsx
+- [X] T025 [US2] Implement error display in ui/src/App.tsx (HTTP errors and timeout)
+- [X] T026 [US2] Create ui/src/main.tsx with React root rendering
+- [X] T027 [US2] Create ui/index.html as entry point
+- [X] T028 [US2] Configure Vite in ui/package.json scripts (dev, build, preview)
+- [X] T029 [US2] Create ui/README.md with installation and run instructions
 
 **Checkpoint**: UI should be runnable via `bun run dev` and successfully communicate with server
 
@@ -110,14 +110,14 @@ curl -X POST http://localhost:8000/agent -H "Content-Type: application/json" -d 
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T030 [P] Add detailed quickstart verification steps to README.md
-- [ ] T031 [P] Add environment variable documentation to server/README.md
-- [ ] T032 [P] Add troubleshooting section to top-level README.md
-- [ ] T033 Verify server can run without DASHSCOPE_API_KEY (fallback mode)
-- [ ] T034 Verify UI timeout works correctly (6-minute threshold)
-- [ ] T035 Verify CORS allows UI on any port to access server
-- [ ] T036 Run full integration test: UI → Server → LLM (if credentials available)
-- [ ] T037 Verify both packages match structure in specs/001-monorepo-llm-agent/plan.md
+- [X] T030 [P] Add detailed quickstart verification steps to README.md
+- [X] T031 [P] Add environment variable documentation to server/README.md
+- [X] T032 [P] Add troubleshooting section to top-level README.md
+- [X] T033 Verify server can run without DASHSCOPE_API_KEY (fallback mode)
+- [X] T034 Verify UI timeout works correctly (6-minute threshold)
+- [X] T035 Verify CORS allows UI on any port to access server
+- [X] T036 Run full integration test: UI → Server → LLM (if credentials available)
+- [X] T037 Verify both packages match structure in specs/001-monorepo-llm-agent/plan.md
 
 ---
 
