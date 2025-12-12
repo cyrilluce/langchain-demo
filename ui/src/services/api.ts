@@ -4,7 +4,8 @@
 
 import type { AgentRequest, AgentResponse, ErrorResponse } from '../types';
 
-const API_BASE_URL = 'http://localhost:8000';
+// Read API base URL from Vite env with a sensible default
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 const REQUEST_TIMEOUT = 360000; // 6 minutes in milliseconds
 
 export class ApiError extends Error {
