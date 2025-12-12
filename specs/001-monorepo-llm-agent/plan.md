@@ -11,7 +11,7 @@ Create a minimal monorepo with Python FastAPI server (langchain/langgraph with A
 
 ## Technical Context
 
-**Language/Version**: Python 3.10+ (server), TypeScript 5.x+ (UI)  
+**Language/Version**: Python 3.10+ (server), uv runtime, TypeScript 5.x+ (UI), bun runtime
 **Primary Dependencies**: FastAPI, langchain, langgraph, Aliyun SDK (server); React 18+, Bun runtime (UI)  
 **Storage**: N/A (no persistence in initial scaffold)  
 **Testing**: pytest (server), Vitest + React Testing Library (UI)  
@@ -90,16 +90,20 @@ No complexity violations. This is a standard web application scaffold with expec
 ## Phase Completion Status
 
 ### Phase 0: Outline & Research ✅
+
 **Output**: [research.md](research.md)
 
 Resolved all technical unknowns:
+
 - UI testing framework → Vitest + React Testing Library
 - Aliyun LLM integration → langchain-community with Tongyi/Dashscope
 - CORS configuration → FastAPI CORSMiddleware with allow_origins=["*"]
 - Timeout handling → fetch API with AbortController (360s)
 
 ### Phase 1: Design & Contracts ✅
-**Outputs**: 
+
+**Outputs**:
+
 - [data-model.md](data-model.md) - Entities: Prompt, Answer, ErrorResponse, Agent
 - [contracts/openapi.yaml](contracts/openapi.yaml) - OpenAPI 3.0 spec with /agent and /health endpoints
 - [quickstart.md](quickstart.md) - Setup and verification guide
@@ -108,6 +112,7 @@ Resolved all technical unknowns:
 **Constitution Re-check**: ✅ PASS (no violations after design)
 
 ### Phase 2: Task Breakdown 🚫
+
 **Status**: Not executed (per speckit.plan scope)
 
 **Next Command**: Run `/speckit.tasks` to generate implementation tasks.md
