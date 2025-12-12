@@ -1,0 +1,200 @@
+openapi: 3.0.3
+info:
+  title: Monorepo LLM Agent API
+  description: |
+    Minimal LLM agent API using langchain/langgraph with Aliyun Dashscope.
+    
+    This is a development scaffold with:
+    - Permissive CORS (allow all origins)
+    - No authentication
+    - 6-minute client timeout expectation
+    - Fallback mode when LLM credentials unavailable
+  version: 1.0.0
+  contact:
+    name: Development Team
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /agent:
+    post:
+      summary: Process prompt with LLM agent
+      description: |
+        Accepts a text prompt and returns the agent's generated answer.
+        
+        **Behavior**:
+        - With valid DASHSCOPE_API_KEY: Uses Aliyun LLM
+        - Without credentials: Returns deterministic fallback
+        - On LLM failure: Returns HTTP 503
+        
+        **Expected Response Time**: Up to 6 minutes (360s)
+      operationId: processPrompt
+      tags:
+        - Agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptRequest'
+            examples:
+              simple:
+                value:
+                  prompt: "What is the capital of France?"
+              complex:
+                value:
+                  prompt: "Explain quantum computing in simple terms."
+      responses:
+        '200':
+          description: Successful agent response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+              examples:
+                success:
+                  value:
+                    answer: "Paris is the capital of France."
+                fallback:
+                  value:
+                    answer: "This is a fallback response. LLM integration not configured."
+        '422':
+          description: Invalid request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                empty_prompt:
+                  value:
+                    detail:
+                      - loc: ["body", "prompt"]
+                        msg: "ensure this value has at least 1 characters"
+                        type: "value_error.any_str.min_length"
+        '503':
+          description: Service unavailable (LLM API error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                llm_unavailable:
+                  value:
+                    error: "LLM service temporarily unavailable. Please try again later."
+                    code: "LLM_UNAVAILABLE"
+                rate_limit:
+                  value:
+                    error: "Rate limit exceeded. Please wait before retrying."
+                    code: "RATE_LIMIT_EXCEEDED"
+                timeout:
+                  value:
+                    error: "LLM request timed out."
+                    code: "LLM_TIMEOUT"
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns service health status
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  value:
+                    status: "healthy"
+                    llm_configured: true
+                partially_healthy:
+                  value:
+                    status: "healthy"
+                    llm_configured: false
+
+components:
+  schemas:
+    PromptRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: User's text input for the LLM agent
+          example: "What is the capital of France?"
+
+    AgentResponse:
+      type: object
+      required:
+        - answer
+      properties:
+        answer:
+          type: string
+          minLength: 1
+          description: Generated response from the LLM agent
+          example: "Paris is the capital of France."
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "LLM service temporarily unavailable."
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "LLM_UNAVAILABLE"
+          enum:
+            - LLM_UNAVAILABLE
+            - RATE_LIMIT_EXCEEDED
+            - LLM_TIMEOUT
+            - INTERNAL_ERROR
+
+    ValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  anyOf:
+                    - type: string
+                    - type: integer
+              msg:
+                type: string
+              type:
+                type: string
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          description: Overall service health
+        llm_configured:
+          type: boolean
+          description: Whether LLM credentials are configured
+
+tags:
+  - name: Agent
+    description: LLM agent operations
+  - name: Health
+    description: Service health monitoring
