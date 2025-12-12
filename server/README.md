@@ -15,21 +15,26 @@ Python FastAPI server with LangChain/LangGraph integration for LLM agent functio
 ### Prerequisites
 
 - Python 3.10 or higher
-- pip or uv package manager
+- [uv](https://github.com/astral-sh/uv) package manager
 
 ### Setup
 
-1. Create a virtual environment:
+1. Install uv (if not already installed):
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or via pip
+pip install uv
 ```
 
-2. Install dependencies:
+2. Create a virtual environment and install dependencies:
 
 ```bash
-pip install -r requirements.txt
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -r requirements.txt
 ```
 
 3. Configure environment (optional):
@@ -47,8 +52,23 @@ DASHSCOPE_MODEL=qwen-turbo  # or qwen-plus, qwen-max
 
 ### Development Mode
 
+Quick start with the included script:
+
 ```bash
-uvicorn app.main:app --reload --port 8000
+./dev.sh
+```
+
+Or run directly:
+
+```bash
+uv run python -m uvicorn app.main:app --reload --port 8000
+```
+
+Or with activated virtual environment:
+
+```bash
+source .venv/bin/activate
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 The server will be available at <http://localhost:8000>
@@ -56,7 +76,7 @@ The server will be available at <http://localhost:8000>
 ### Production Mode
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ## API Endpoints
@@ -113,13 +133,13 @@ Check service health and configuration status.
 
 ### GET /
 
-API information endpoint.
+uv run pytest tests/ -v
+```
 
-## Testing
-
-Run tests with pytest:
+Run with coverage:
 
 ```bash
+uv run ```bash
 pytest tests/ -v
 ```
 
@@ -156,8 +176,7 @@ server/
 └── README.md            # This file
 ```
 
-## Troubleshooting
-
+uv 
 ### Import Errors
 
 If you encounter import errors with langchain:
@@ -173,13 +192,13 @@ pip install langchain langchain-community dashscope --force-reinstall
 2. Check network connectivity to Aliyun services
 3. Try a different model (qwen-plus, qwen-max)
 4. Check the Dashscope service status
-
+ run uv
 ### Port Already in Use
 
 If port 8000 is already in use, specify a different port:
 
 ```bash
-uvicorn app.main:app --reload --port 8001
+uv run python -m uvicorn app.main:app --reload --port 8001
 ```
 
 ## Development
@@ -190,7 +209,8 @@ Follow PEP 8 guidelines. Format code with:
 
 ```bash
 black app/
-isort app/
+uv run black app/
+uv run isort app/
 ```
 
 ### Type Checking
@@ -198,8 +218,7 @@ isort app/
 Run mypy for type checking:
 
 ```bash
-mypy app/
-```
+uv run ```
 
 ## License
 
