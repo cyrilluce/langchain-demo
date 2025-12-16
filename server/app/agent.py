@@ -7,6 +7,7 @@ from langchain_community.chat_models import ChatTongyi
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.runnables import RunnableConfig
 from langchain.agents import create_agent
+from pydantic import SecretStr
 from .config import config
 import asyncio
 
@@ -16,16 +17,17 @@ class LLMAgent:
     
     def __init__(self):
         """Initialize the agent with LLM and tools (prepared for future expansion)."""
+        api_key = config.DASHSCOPE_API_KEY
         self.llm = ChatTongyi(
-            model_name=config.DASHSCOPE_MODEL,
-            dashscope_api_key=config.DASHSCOPE_API_KEY,
+            model=config.DASHSCOPE_MODEL,
+            api_key=SecretStr(api_key) if api_key else None,
         )
+        self.tools: List = []  # Empty tools list, ready for future additions
         self.agent = create_agent(
             model=self.llm,
             tools=self.tools,  # Empty for now, ready for future tools
             system_prompt="You are a helpful AI assistant. Answer the user's questions concisely.",
         )
-        self.tools: List = []  # Empty tools list, ready for future additions
         self.fallback_mode = not config.is_llm_configured()
             
     async def ainvoke(
@@ -263,6 +265,53 @@ class LLMAgent:
                 )
             except Exception as e:
                 print(f"Failed to reinitialize agent with tools: {e}")
+    
+    async def astream_messages(
+        self, 
+        input: Union[str, Dict[str, Any], BaseMessage],
+        config: Optional[RunnableConfig] = None
+    ) -> AsyncIterator[Any]:
+        """
+        Stream the agent's response as AIMessageChunk objects for proper conversion.
+        
+        This method returns raw LangChain message chunks suitable for conversion
+        to Vercel AI SDK UIMessage format.
+        
+        Args:
+            input: The input (same as astream)
+            config: Optional configuration
+            
+        Yields:
+            AIMessageChunk or ToolMessage objects
+        """
+        if self.fallback_mode:
+            prompt_text = self._extract_prompt(input)
+            response = self._fallback_response(prompt_text)
+            # Emit as chunks
+            for word in response.split():
+                yield AIMessage(content=word + " ")
+                await asyncio.sleep(0.05)
+            return
+
+        try:
+            prompt_text = self._extract_prompt(input)
+
+            # Stream using messages mode to get proper AIMessageChunk objects
+            if self.agent:
+                async for chunk in self.agent.astream(
+                    {"messages": [HumanMessage(content=prompt_text)]},
+                    config=config,
+                    stream_mode="messages"
+                ):
+                    # Yield the raw chunk for conversion
+                    yield chunk
+            else:
+                # No agent - use direct LLM streaming
+                if self.llm:
+                    async for chunk in self.llm.astream(prompt_text):
+                        yield chunk
+        except Exception as e:
+            raise Exception(f"LLM service error: {str(e)}")
     
     # Backward compatibility methods
     async def process_prompt(self, prompt: str) -> str:

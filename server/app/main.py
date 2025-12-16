@@ -91,8 +91,9 @@ async def process_agent_request_stream(request: Request):
     converter = UIMessageStreamConverter()
 
     async def event_stream():
-        token_stream = agent.process_prompt_stream(prompt)
-        async for frame in converter.stream(token_stream):
+        # Use the new astream_messages method that returns AIMessageChunk objects
+        message_stream = agent.astream_messages(prompt)
+        async for frame in converter.stream_converter.convert_stream(message_stream):
             yield frame
 
     return StreamingResponse(
