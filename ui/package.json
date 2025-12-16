@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "bun@1.2.16",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,19 +11,20 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@ai-sdk/react": "^2.0.114",
+    "ai": "^5.0.112",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
+    "jsdom": "^23.0.1",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
-    "vitest": "^1.1.0",
-    "@testing-library/react": "^14.1.2",
-    "@testing-library/user-event": "^14.5.1",
-    "jsdom": "^23.0.1"
+    "vitest": "^1.1.0"
   }
 }
-

@@ -1,55 +1,37 @@
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
-import { submitPrompt, ApiError, TimeoutError } from './services/api';
-import type { LoadingState } from './types';
 import './App.css';
 
 function App() {
-  const [prompt, setPrompt] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loadingState, setLoadingState] = useState<LoadingState>('idle');
-  const [error, setError] = useState<string | null>(null);
+  const [input, setInput] = useState('');
+  
+  const apiUrl = import.meta.env.VITE_API_BASE_URL 
+    ? `${import.meta.env.VITE_API_BASE_URL}/agent/stream`
+    : 'http://localhost:8000/agent/stream';
+  
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({
+      api: apiUrl,
+    }),
+  });
+  
+  const isLoading = status === 'submitted' || status === 'streaming';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!input.trim() || isLoading) return;
 
-    if (!prompt.trim()) {
-      setError('Please enter a prompt');
-      return;
-    }
-
-    setLoadingState('loading');
-    setError(null);
-    setAnswer('');
-
-    try {
-      const response = await submitPrompt(prompt);
-      setAnswer(response);
-      setLoadingState('success');
-    } catch (err) {
-      if (err instanceof TimeoutError) {
-        setError('Request timed out after 6 minutes. Please try a simpler prompt or check your connection.');
-        setLoadingState('timeout');
-      } else if (err instanceof ApiError) {
-        if (err.status === 503) {
-          setError(`LLM service unavailable: ${err.message}`);
-        } else {
-          setError(err.message);
-        }
-        setLoadingState('error');
-      } else {
-        setError('An unexpected error occurred');
-        setLoadingState('error');
-      }
-    }
+    sendMessage({ text: input });
+    setInput('');
   };
-
-  const isLoading = loadingState === 'loading';
 
   return (
     <div className="App">
       <header className="App-header">
         <h1>LLM Agent Demo</h1>
-        <p>Submit a prompt to the AI agent</p>
+        <p>Submit a prompt to the AI agent (with streaming)</p>
       </header>
 
       <main className="App-main">
@@ -58,18 +40,19 @@ function App() {
             <label htmlFor="prompt">Your Prompt:</label>
             <textarea
               id="prompt"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              name="prompt"
               placeholder="Enter your question or prompt here..."
               rows={5}
               disabled={isLoading}
               className="prompt-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
             />
           </div>
 
           <button 
             type="submit" 
-            disabled={isLoading || !prompt.trim()}
+            disabled={isLoading || !input.trim()}
             className="submit-button"
           >
             {isLoading ? 'Processing...' : 'Submit'}
@@ -79,29 +62,45 @@ function App() {
         {isLoading && (
           <div className="loading-spinner">
             <div className="spinner"></div>
-            <p>Waiting for response (this may take up to 6 minutes)...</p>
+            <p>Streaming response...</p>
           </div>
         )}
 
         {error && (
           <div className="error-message">
             <h3>Error</h3>
-            <p>{error}</p>
+            <p>{error.message}</p>
           </div>
         )}
 
-        {answer && loadingState === 'success' && (
-          <div className="answer-display">
-            <h3>Response:</h3>
-            <div className="answer-content">
-              {answer}
-            </div>
+        {messages.length > 0 && (
+          <div className="messages-container">
+            <h3>Conversation:</h3>
+            {messages.map((message) => {
+              // Extract text from message parts
+              const content = message.parts
+                .filter((part: any) => part.type === 'text')
+                .map((part: any) => part.text)
+                .join('');
+              
+              return (
+                <div 
+                  key={message.id} 
+                  className={`message ${message.role}`}
+                >
+                  <strong>{message.role === 'user' ? 'You' : 'AI'}:</strong>
+                  <div className="message-content">
+                    {content}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
 
       <footer className="App-footer">
-        <p>Powered by FastAPI + LangChain + React</p>
+        <p>Powered by FastAPI + LangChain + React + Vercel AI SDK</p>
       </footer>
     </div>
   );

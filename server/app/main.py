@@ -2,11 +2,17 @@
 FastAPI application entry point.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from .models import PromptRequest, AgentResponse, ErrorResponse, HealthResponse
 from .agent import agent
 from .config import config
+from .ui_message_stream import (
+    UIMessageStreamConverter,
+    VERCEL_UI_STREAM_HEADERS,
+    extract_prompt_from_messages,
+)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -63,6 +69,39 @@ async def health_check() -> HealthResponse:
     )
 
 
+@app.post("/agent/stream")
+async def process_agent_request_stream(request: Request):
+    """
+    Process a prompt with the LLM agent using streaming response.
+    Compatible with Vercel AI SDK UIMessage streaming format.
+    """
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid request payload")
+
+    messages = body.get("messages")
+    if not isinstance(messages, list) or not messages:
+        raise HTTPException(status_code=400, detail="No messages provided")
+
+    try:
+        prompt = extract_prompt_from_messages(messages)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    converter = UIMessageStreamConverter()
+
+    async def event_stream():
+        token_stream = agent.process_prompt_stream(prompt)
+        async for frame in converter.stream(token_stream):
+            yield frame
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers=VERCEL_UI_STREAM_HEADERS,
+    )
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
@@ -71,6 +110,7 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "agent": "POST /agent",
+            "agent_stream": "POST /agent/stream",
             "health": "GET /health"
         }
     }

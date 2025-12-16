@@ -188,6 +188,54 @@ body {
   word-wrap: break-word;
 }
 
+.messages-container {
+  padding: 2rem;
+  background: #2a2a2a;
+  border-radius: 12px;
+  border: 2px solid #667eea;
+}
+
+.messages-container h3 {
+  color: #667eea;
+  margin-bottom: 1.5rem;
+}
+
+.message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: #1a1a1a;
+}
+
+.message:last-child {
+  margin-bottom: 0;
+}
+
+.message.user {
+  border-left: 4px solid #667eea;
+}
+
+.message.assistant {
+  border-left: 4px solid #764ba2;
+}
+
+.message strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #667eea;
+}
+
+.message.assistant strong {
+  color: #764ba2;
+}
+
+.message-content {
+  color: #fff;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 .App-footer {
   text-align: center;
   margin-top: 3rem;
