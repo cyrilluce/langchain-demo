@@ -8,7 +8,7 @@ This module provides separate converters for different LangGraph node types:
 The converters implement the Vercel AI SDK Data Stream Protocol with start/delta/end patterns.
 """
 
-from typing import AsyncIterator, Dict, Any, Optional, Set
+from typing import AsyncIterator, Dict, Any, Optional, Set, Tuple, cast
 from langchain_core.messages import AIMessageChunk, ToolMessage
 import json
 import uuid
@@ -87,10 +87,14 @@ class ModelConverter(BaseConverter):
             SSE formatted string events
         """
         # Handle reasoning content (if present - not all models support this)
-        reasoning = getattr(chunk, 'reasoning', None)
-        if reasoning:
-            async for event in self._handle_reasoning(reasoning):
-                yield event
+        reasoningList = [block for block in chunk.content_blocks if block.get('type') == 'reasoning']
+        if len(reasoningList)>0:
+            for reasoning in reasoningList:
+                str = reasoning.get('reasoning')
+                if not str:
+                    continue
+                async for event in self._handle_reasoning(str):
+                    yield event
         
         # Handle text content
         if chunk.content:
@@ -376,7 +380,7 @@ class StreamConverter:
     
     async def convert_stream(
         self, 
-        chunk_stream: AsyncIterator[Any]
+        chunk_stream: AsyncIterator[AIMessageChunk]
     ) -> AsyncIterator[str]:
         """
         Convert a LangChain stream to Vercel AI SDK format.
@@ -397,6 +401,7 @@ class StreamConverter:
         
         try:
             async for chunk in chunk_stream:
+                print(f'{chunk.model_dump_json(ensure_ascii=False)}')
                 # Route based on chunk type
                 if isinstance(chunk, AIMessageChunk):
                     async for event in self.model_converter.convert(chunk):

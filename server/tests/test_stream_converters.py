@@ -55,8 +55,7 @@ class TestModelConverter:
         converter = ModelConverter()
         
         # Create chunk with reasoning attribute
-        chunk = AIMessageChunk(content="")
-        chunk.reasoning = "Let me think..."
+        chunk = AIMessageChunk(content=[dict({"type":"reasoning", "reasoning":"Let me think..."})])
         
         events = []
         async for event in converter.convert(chunk):
@@ -250,8 +249,7 @@ class TestStreamConverter:
         
         async def mock_stream():
             """Mock stream with reasoning."""
-            chunk = AIMessageChunk(content="Answer")
-            chunk.reasoning = "I think..."
+            chunk = AIMessageChunk(content=[{"type":"reasoning", "reasoning": "I think..."}, "Answer"])
             yield chunk
         
         events = []
