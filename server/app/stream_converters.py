@@ -271,7 +271,7 @@ class ToolsConverter(BaseConverter):
         self.tool_outputs: Dict[str, str] = {}  # Accumulate tool outputs as strings
         self.tool_output_types: Dict[
             str, Any
-        ] = {}  # Store original content for proper output
+        ]  # Store original content for proper output
 
     async def convert(self, message: ToolMessage) -> AsyncIterator[str]:
         """
@@ -396,7 +396,7 @@ class StreamConverter:
         self.message_id: Optional[str] = None
 
     async def convert_stream(
-        self, chunk_stream: AsyncIterator[AIMessageChunk]
+        self, chunk_stream: AsyncIterator[AIMessageChunk | str]
     ) -> AsyncIterator[str]:
         """
         Convert a LangChain stream to Vercel AI SDK format.
@@ -414,27 +414,29 @@ class StreamConverter:
 
         try:
             async for chunk in chunk_stream:
-                print(f"{chunk.model_dump_json(ensure_ascii=False)}")
-                # Route based on chunk type
+                # Debugging: Log the type and content of the chunk
+                print(f"Processing chunk: {type(chunk)}, {chunk}")
+
                 if isinstance(chunk, AIMessageChunk):
                     async for event in self.model_converter.convert(chunk):
                         yield event
                 elif isinstance(chunk, ToolMessage):
                     async for event in self.tools_converter.convert(chunk):
                         yield event
-                    # Finalize tool output when we get the complete message
                     if chunk.tool_call_id:
                         async for event in self.tools_converter.finalize_tool(
                             chunk.tool_call_id
                         ):
                             yield event
                 else:
-                    # Unknown chunk type - try to extract text
+                    # Handle unknown chunk types
                     if hasattr(chunk, "content"):
                         text_chunk = AIMessageChunk(content=chunk.content)
                         async for event in self.model_converter.convert(text_chunk):
                             yield event
-
+                    else:
+                        # Debugging: Log unexpected chunk types
+                        print(f"Unexpected chunk type: {type(chunk)}")
         finally:
             # Finalize all pending chunks
             async for event in self.model_converter.finalize():

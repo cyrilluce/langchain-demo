@@ -4,12 +4,13 @@ LLM agent implementation using langchain agent framework with Aliyun Dashscope.
 
 from typing import Optional, AsyncIterator, Dict, Any, Union, List
 from langchain_community.chat_models import ChatTongyi
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, AIMessageChunk
 from langchain_core.runnables import RunnableConfig
 from langchain.agents import create_agent
 from pydantic import SecretStr
 from .config import config
 import asyncio
+import logging
 
 
 class LLMAgent:
@@ -273,7 +274,7 @@ class LLMAgent:
         self,
         input: Union[str, Dict[str, Any], BaseMessage],
         config: Optional[RunnableConfig] = None,
-    ) -> AsyncIterator[Any]:
+    ) -> AsyncIterator[AIMessageChunk | str]:
         """
         Stream the agent's response as AIMessageChunk objects for proper conversion.
 
@@ -292,7 +293,7 @@ class LLMAgent:
             response = self._fallback_response(prompt_text)
             # Emit as chunks
             for word in response.split():
-                yield AIMessage(content=word + " ")
+                yield AIMessageChunk(content=word + " ")
                 await asyncio.sleep(0.05)
             return
 
@@ -301,7 +302,7 @@ class LLMAgent:
 
             # Stream using messages mode to get proper AIMessageChunk objects
             if self.agent:
-                async for chunk in self.agent.astream(
+                async for chunk, _ in self.agent.astream(
                     {"messages": [HumanMessage(content=prompt_text)]},
                     config=config,
                     stream_mode="messages",
@@ -314,6 +315,9 @@ class LLMAgent:
                     async for chunk in self.llm.astream(prompt_text):
                         yield chunk
         except Exception as e:
+            # Log the error and yield an error message chunk
+            logging.error(f"Error in astream_messages: {str(e)}")
+            yield AIMessageChunk(content=f"Error: {str(e)}")
             raise Exception(f"LLM service error: {str(e)}")
 
     # Backward compatibility methods
