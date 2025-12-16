@@ -12,15 +12,15 @@ load_dotenv()
 
 class Config:
     """Application configuration."""
-    
+
     # Aliyun Dashscope configuration
     DASHSCOPE_API_KEY: Optional[str] = os.getenv("DASHSCOPE_API_KEY")
     DASHSCOPE_MODEL: str = os.getenv("DASHSCOPE_MODEL", "qwen-turbo")
-    
+
     # Server configuration
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
-    
+
     @classmethod
     def is_llm_configured(cls) -> bool:
         """Check if LLM credentials are configured."""

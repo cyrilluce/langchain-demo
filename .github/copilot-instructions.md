@@ -81,8 +81,8 @@ bun run dev  # Vite 开发服务器在 :5173 端口
 - **永远不要在 agent 代码中抛出未处理的异常** - 用 try/except 包装并抛出 `Exception(f"LLM service error: {str(e)}")`
 - FastAPI 处理器捕获并转换为 503，带结构化错误 JSON
 
-### 类型安全
-- **Python**: 要保证没有 python 语法错误
+### 类型安全 & Linter
+- **Python**: 要保证没有 python 语法错误，并执行 `uv run ruff` 来检查代码
 - **TypeScript**: 启用严格模式，所有属性必须类型化
 
 ## 外部依赖

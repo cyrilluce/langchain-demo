@@ -18,7 +18,7 @@ from .ui_message_stream import (
 app = FastAPI(
     title="Monorepo LLM Agent API",
     description="Minimal LLM agent using langchain/langgraph with Aliyun Dashscope",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Configure CORS - Allow all origins for development
@@ -31,28 +31,30 @@ app.add_middleware(
 )
 
 
-@app.post("/agent", response_model=AgentResponse, responses={
-    503: {"model": ErrorResponse, "description": "LLM service unavailable"}
-})
+@app.post(
+    "/agent",
+    response_model=AgentResponse,
+    responses={503: {"model": ErrorResponse, "description": "LLM service unavailable"}},
+)
 async def process_agent_request(request: PromptRequest) -> AgentResponse:
     """
     Process a prompt with the LLM agent.
-    
+
     - **prompt**: User's text input (1-10000 characters)
-    
+
     Returns the agent's generated response or fallback message.
     """
     try:
         answer = await agent.process_prompt(request.prompt)
         return AgentResponse(answer=answer)
-    except Exception as e:
+    except Exception:
         # Return HTTP 503 for LLM failures
         raise HTTPException(
             status_code=503,
             detail={
                 "error": "LLM service temporarily unavailable. Please try again later.",
-                "code": "LLM_UNAVAILABLE"
-            }
+                "code": "LLM_UNAVAILABLE",
+            },
         )
 
 
@@ -60,13 +62,10 @@ async def process_agent_request(request: PromptRequest) -> AgentResponse:
 async def health_check() -> HealthResponse:
     """
     Health check endpoint.
-    
+
     Returns service status and LLM configuration state.
     """
-    return HealthResponse(
-        status="healthy",
-        llm_configured=config.is_llm_configured()
-    )
+    return HealthResponse(status="healthy", llm_configured=config.is_llm_configured())
 
 
 @app.post("/agent/stream")
@@ -112,7 +111,6 @@ async def root():
         "endpoints": {
             "agent": "POST /agent",
             "agent_stream": "POST /agent/stream",
-            "health": "GET /health"
-        }
+            "health": "GET /health",
+        },
     }
-

@@ -4,12 +4,11 @@ from langchain_core.messages import AIMessageChunk
 from pydantic import SecretStr
 from .config import config
 import json
-from typing import cast, Any
+from typing import cast
+
 
 def get_weather(city: str) -> str:
     """Get weather for a given city."""
-
-
 
     return f"It's always sunny in {city}!"
 
@@ -22,7 +21,7 @@ agent = create_agent(
     model=model,
     tools=[get_weather],
 )
-for token, metadata in agent.stream(  
+for token, metadata in agent.stream(
     {"messages": [{"role": "user", "content": "What is the weather in SF?"}]},
     stream_mode="messages",
 ):
@@ -30,6 +29,6 @@ for token, metadata in agent.stream(
     output = {
         "metadata": metadata,
         "token": token.model_dump(),
-        "content": token.content_blocks
+        "content": token.content_blocks,
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))

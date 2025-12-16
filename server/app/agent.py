@@ -2,7 +2,7 @@
 LLM agent implementation using langchain agent framework with Aliyun Dashscope.
 """
 
-from typing import Optional, AsyncIterator, Dict, Any, Union, List, get_type_hints
+from typing import Optional, AsyncIterator, Dict, Any, Union, List
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.runnables import RunnableConfig
@@ -14,8 +14,8 @@ import asyncio
 
 class LLMAgent:
     """LangChain Agent with Aliyun Dashscope integration and fallback support."""
-    
-    def __init__(self):
+
+    def __init__(self) -> None:
         """Initialize the agent with LLM and tools (prepared for future expansion)."""
         api_key = config.DASHSCOPE_API_KEY
         self.llm = ChatTongyi(
@@ -29,41 +29,40 @@ class LLMAgent:
             system_prompt="You are a helpful AI assistant. Answer the user's questions concisely.",
         )
         self.fallback_mode = not config.is_llm_configured()
-            
+
     async def ainvoke(
-        self, 
+        self,
         input: Union[str, Dict[str, Any], BaseMessage],
-        config: Optional[RunnableConfig] = None
+        config: Optional[RunnableConfig] = None,
     ) -> str:
         """
         Invoke the agent with a prompt using langchain's standard interface.
-        
+
         Args:
             input: The input can be:
                 - str: Direct prompt text
                 - Dict: Input variables (e.g., {"input": "prompt text"})
                 - BaseMessage: A langchain message object
             config: Optional configuration for the invocation
-            
+
         Returns:
             Generated response from agent or fallback message
-            
+
         Raises:
             Exception: If agent processing fails (non-fallback mode)
         """
         if self.fallback_mode:
             prompt_text = self._extract_prompt(input)
             return self._fallback_response(prompt_text)
-        
+
         try:
             # Extract prompt text
             prompt_text = self._extract_prompt(input)
-            
+
             # Invoke the agent executor
             if self.agent:
                 result = await self.agent.ainvoke(
-                    {"messages": [HumanMessage(content=prompt_text)]},
-                    config=config
+                    {"messages": [HumanMessage(content=prompt_text)]}, config=config
                 )
                 # LangGraph agent returns a state dict with 'messages' key
                 # Extract the last AI message
@@ -72,21 +71,25 @@ class LLMAgent:
                     if messages:
                         last_msg = messages[-1]
                         if isinstance(last_msg, AIMessage):
-                            return last_msg.content if isinstance(last_msg.content, str) else str(last_msg.content)
+                            return (
+                                last_msg.content
+                                if isinstance(last_msg.content, str)
+                                else str(last_msg.content)
+                            )
                 return str(result)
             else:
                 return self._fallback_response(prompt_text)
         except Exception as e:
             raise Exception(f"LLM service error: {str(e)}")
-    
+
     async def astream(
-        self, 
+        self,
         input: Union[str, Dict[str, Any], BaseMessage],
-        config: Optional[RunnableConfig] = None
+        config: Optional[RunnableConfig] = None,
     ) -> AsyncIterator[str]:
         """
         Stream the agent's response using langchain's standard interface.
-        
+
         Preference order:
         1. Direct LLM streaming (highest fidelity, no tools)
         2. Agent streaming (when tools are in play)
@@ -107,9 +110,9 @@ class LLMAgent:
             if self.llm and not self.tools:
                 emitted = False
                 async for chunk in self.agent.astream(
-                    { "messages": [HumanMessage(content=prompt_text)]},
+                    {"messages": [HumanMessage(content=prompt_text)]},
                     config=config,
-                    stream_mode="messages"
+                    stream_mode="messages",
                 ):
                     text_chunk = self._extract_text_from_llm_chunk(chunk)
                     if text_chunk:
@@ -124,7 +127,7 @@ class LLMAgent:
                 async for chunk in self.agent.astream(
                     {"messages": [HumanMessage(content=prompt_text)]},
                     config=config,
-                    stream_mode="messages"
+                    stream_mode="messages",
                 ):
                     text_chunk = self._extract_text_from_agent_chunk(chunk)
                     if text_chunk:
@@ -140,14 +143,14 @@ class LLMAgent:
                     yield piece
         except Exception as e:
             raise Exception(f"LLM service error: {str(e)}")
-    
+
     def _extract_prompt(self, input: Union[str, Dict[str, Any], BaseMessage]) -> str:
         """
         Extract prompt text from various input formats.
-        
+
         Args:
             input: The input in various formats
-            
+
         Returns:
             Extracted prompt text
         """
@@ -161,7 +164,7 @@ class LLMAgent:
             return content if isinstance(content, str) else str(content)
         else:
             return str(input)
-    
+
     def _fallback_response(self, prompt: str) -> str:
         """Generate a fallback response when LLM is not configured."""
         return (
@@ -238,19 +241,19 @@ class LLMAgent:
         if not text:
             return []
 
-        return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
-    
+        return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
+
     def is_ready(self) -> bool:
         """Check if the agent is ready to process requests."""
         return True  # Agent is always ready (fallback mode or LLM mode)
-    
+
     def add_tool(self, tool: Any) -> None:
         """
         Add a tool to the agent (for future expansion).
-        
+
         Args:
             tool: A LangChain tool object
-            
+
         Note: After adding tools, you need to reinitialize the agent
         """
         self.tools.append(tool)
@@ -265,22 +268,22 @@ class LLMAgent:
                 )
             except Exception as e:
                 print(f"Failed to reinitialize agent with tools: {e}")
-    
+
     async def astream_messages(
-        self, 
+        self,
         input: Union[str, Dict[str, Any], BaseMessage],
-        config: Optional[RunnableConfig] = None
+        config: Optional[RunnableConfig] = None,
     ) -> AsyncIterator[Any]:
         """
         Stream the agent's response as AIMessageChunk objects for proper conversion.
-        
+
         This method returns raw LangChain message chunks suitable for conversion
         to Vercel AI SDK UIMessage format.
-        
+
         Args:
             input: The input (same as astream)
             config: Optional configuration
-            
+
         Yields:
             AIMessageChunk or ToolMessage objects
         """
@@ -301,7 +304,7 @@ class LLMAgent:
                 async for chunk in self.agent.astream(
                     {"messages": [HumanMessage(content=prompt_text)]},
                     config=config,
-                    stream_mode="messages"
+                    stream_mode="messages",
                 ):
                     # Yield the raw chunk for conversion
                     yield chunk
@@ -312,12 +315,12 @@ class LLMAgent:
                         yield chunk
         except Exception as e:
             raise Exception(f"LLM service error: {str(e)}")
-    
+
     # Backward compatibility methods
     async def process_prompt(self, prompt: str) -> str:
         """Legacy method for backward compatibility. Use ainvoke() instead."""
         return await self.ainvoke(prompt)
-    
+
     async def process_prompt_stream(self, prompt: str) -> AsyncIterator[str]:
         """Legacy method for backward compatibility. Use astream() instead."""
         async for chunk in self.astream(prompt):
