@@ -4,10 +4,11 @@
 
 这是一个 **monorepo**，包含两个通过 HTTP 通信的独立服务：
 
-- **server/**: Python FastAPI 后端，集成 LangChain 进行 LLM 编排（阿里云 Dashscope/Qwen 模型）
-- **ui/**: React TypeScript 前端，使用 Vite + Bun 运行时 + Vercel AI SDK 进行流式传输
+- **server/**: Python FastAPI 后端，集成 LangChain(>=1.1.3) / LangGraph(>=1.0.4) 进行 LLM 编排（阿里云 Dashscope/Qwen 模型）
+- **ui/**: React TypeScript 前端，使用 Vite + Bun 运行时 + Vercel AI SDK(>=5) 进行流式传输
 
-**关键架构决策**：当 `DASHSCOPE_API_KEY` 未配置时，服务器以 **回退模式** 运行，返回回显响应而不是失败。这使得无需 LLM 凭证即可进行开发。
+LangChain 文档可通过 MCP 服务 https://docs.langchain.com/mcp 读取；
+Vercel AI SDK 文档可查阅 https://ai-sdk.dev/llms.txt
 
 ## 项目结构和关键文件
 
@@ -30,6 +31,9 @@ ui/
 ```
 
 ## 关键开发工作流
+
+### 类型约束
+每次开发时，都需要保证 IDE 中不会有语法错误的提示( server 端为 python，ui 端为 typescript )
 
 ### 单元测试
 server 每次开发必须新增或更新至少一个针对当前变更的单元测试，放置于 `./server/tests` 目录下，并保证
@@ -59,28 +63,16 @@ bun run dev  # Vite 开发服务器在 :5173 端口
 ```
 
 ### 测试
-- **服务器**: `cd server && pytest tests/ -v`
+- **服务器**: `cd server && uv run pytest tests/ -v`
 - **UI**: `cd ui && bun test`
 
 ## API 契约模式
-
-### 非流式端点 (`POST /agent`)
-```python
-# 请求: PromptRequest
-{"prompt": "用户问题"}
-
-# 响应: AgentResponse (200)
-{"answer": "生成的响应"}
-
-# 错误: ErrorResponse (503)
-{"error": "LLM service temporarily unavailable", "code": "LLM_UNAVAILABLE"}
-```
 
 ### 流式端点 (`POST /agent/stream`)
 - **输入格式**: Vercel AI SDK `UIMessage` 格式，包含 `messages` 数组
 - **提取**: 从 `parts[].text` 提取最后一条用户消息，或回退到 `content`
 - **输出**: 与 `@ai-sdk/react` `useChat` hook 兼容的 Server-Sent Events 流
-- **格式**: `0:"文本块"\n` (Vercel AI SDK 流式协议)
+- **格式**: `{ type: 'text-start', id: 'text-1' }, { type: 'text-delta', id: 'text-1', delta: 'Hello' }, { type: 'text-end', id: 'text-1' }` (Vercel AI SDK UIMessageChunk 流式协议)
 
 ## 项目特定约定
 
