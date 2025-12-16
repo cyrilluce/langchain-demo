@@ -35,4 +35,17 @@ dev = [
     "pytest-trio>=0.8.0",
     "pytest-twisted>=1.14.3",
     "twisted>=25.5.0",
+    "ruff>=0.14.9",
 ]
+
+[tool.mypy]
+disallow_any_expr = true
+warn_return_any = true
+no_implicit_optional = true
+
+[tool.ruff]
+select = [
+    "E", "W", "F",  # 基础错误/警告/格式化
+    "ANN",          # 类型注解
+]
+ignore = ["ANN101"]  # 允许省略 self/cls 类型
