@@ -37,10 +37,10 @@ class ModelStreamToVercelConverter:
             if msg.id and self.current_id != msg.id:
                 # 结束上一个步骤
                 if self.current_id:
-                    yield {"type": "step-end"}
+                    yield {"type": "finish-step"}
 
                 # 开始新步骤
-                yield {"type": "step-start"}
+                yield {"type": "start-step"}
                 self.current_id = msg.id
                 self.text_started = False
                 self.tool_call_started = {}
@@ -125,4 +125,4 @@ class ModelStreamToVercelConverter:
 
         # 流结束，清理状态
         if self.current_id:
-            yield {"type": "step-end"}
+            yield {"type": "finish-step"}

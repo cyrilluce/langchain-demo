@@ -5,8 +5,7 @@ This module provides utilities to convert LangChain streams to Vercel AI SDK
 UIMessage stream format, handling message extraction and stream conversion.
 """
 
-from typing import AsyncIterator, Dict, Any, List
-from .stream_converters import StreamConverter
+from typing import Dict, Any, List
 
 
 # Vercel AI SDK stream headers
@@ -69,41 +68,3 @@ def extract_prompt_from_messages(messages: List[Dict[str, Any]]) -> str:
             return content.strip()
 
     raise ValueError("No valid user message found in messages array")
-
-
-class UIMessageStreamConverter:
-    """
-    Converter for transforming token streams to Vercel AI SDK UIMessage stream format.
-
-    This class wraps the StreamConverter to provide a simple interface for
-    converting arbitrary text token streams to the Vercel AI SDK format.
-    """
-
-    def __init__(self) -> None:
-        """Initialize the converter."""
-        self.stream_converter = StreamConverter()
-
-    async def stream(self, token_stream: AsyncIterator[str]) -> AsyncIterator[str]:
-        """
-        Convert a simple token stream to Vercel AI SDK UIMessage stream format.
-
-        This method wraps simple text tokens into AIMessageChunk objects and
-        then converts them to the Vercel AI SDK format.
-
-        Args:
-            token_stream: AsyncIterator yielding text tokens
-
-        Yields:
-            SSE formatted events following Vercel AI SDK protocol
-        """
-        from langchain_core.messages import AIMessageChunk
-
-        async def wrapped_stream():
-            """Wrap text tokens as AIMessageChunk objects."""
-            async for token in token_stream:
-                if token:
-                    yield AIMessageChunk(content=token)
-
-        # Convert the wrapped stream using StreamConverter
-        async for event in self.stream_converter.convert_stream(wrapped_stream()):
-            yield event
