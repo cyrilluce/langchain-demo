@@ -16,7 +16,8 @@
                 "--port",
                 "8000"
             ],
-            "python": "python"
+            "python": "python",
+            "justMyCode": false
         }
     ]
 }
