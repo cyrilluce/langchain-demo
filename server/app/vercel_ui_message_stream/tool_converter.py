@@ -1,5 +1,6 @@
+from typing import Any, AsyncIterator
+
 from langchain_core.messages import BaseMessage, ToolMessage
-from typing import AsyncIterator, Any
 
 
 class ToolStreamToVercelConverter:

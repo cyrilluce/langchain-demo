@@ -1,5 +1,6 @@
-from langchain_core.messages import BaseMessage, AIMessageChunk
-from typing import AsyncIterator, Any
+from typing import Any, AsyncIterator
+
+from langchain_core.messages import AIMessageChunk, BaseMessage
 
 
 class ModelStreamToVercelConverter:
