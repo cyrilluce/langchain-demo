@@ -1,107 +1,206 @@
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
-import { useState } from 'react';
-import './App.css';
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { useState, useEffect, useRef } from "react";
+import "./App.css";
 
 function App() {
-  const [input, setInput] = useState('');
-  
-  const apiUrl = import.meta.env.VITE_API_BASE_URL 
+  const [input, setInput] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const apiUrl = import.meta.env.VITE_API_BASE_URL
     ? `${import.meta.env.VITE_API_BASE_URL}/agent/stream`
-    : 'http://localhost:8000/agent/stream';
-  
+    : "http://localhost:8000/agent/stream";
+
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: apiUrl,
     }),
   });
-  
-  const isLoading = status === 'submitted' || status === 'streaming';
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
+  const isLoading = status === "submitted" || status === "streaming";
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  }, [input]);
+
+  const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+
     if (!input.trim() || isLoading) return;
 
     sendMessage({ text: input });
-    setInput('');
+    setInput("");
+    setAttachedFiles([]);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter to send, Shift+Enter for newline
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setAttachedFiles((prev) => [...prev, ...files]);
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const renderMessageContent = (message: any) => {
+    const textParts = message.parts.filter((part: any) => part.type === "text");
+    const toolParts = message.parts.filter((part: any) => 
+      part.type === "tool-call" || part.type === "tool-result"
+    );
+
+    return (
+      <>
+        {textParts.map((part: any, idx: number) => (
+          <div key={`text-${idx}`} className="message-text">
+            {part.text}
+          </div>
+        ))}
+        {toolParts.map((part: any, idx: number) => (
+          <details key={`tool-${idx}`} className="tool-call">
+            <summary>
+              {part.type === "tool-call" ? "🔧 Tool Call" : "📋 Tool Result"}
+            </summary>
+            <pre className="tool-json">
+              {JSON.stringify(part, null, 2)}
+            </pre>
+          </details>
+        ))}
+      </>
+    );
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>LLM Agent Demo</h1>
-        <p>Submit a prompt to the AI agent (with streaming)</p>
+    <div className="chat-container">
+      <header className="chat-header">
+        <h1>🤖 LLM Agent Demo</h1>
+        <p>Powered by LangChain + Vercel AI SDK</p>
       </header>
 
-      <main className="App-main">
-        <form onSubmit={handleSubmit} className="prompt-form">
-          <div className="form-group">
-            <label htmlFor="prompt">Your Prompt:</label>
-            <textarea
-              id="prompt"
-              name="prompt"
-              placeholder="Enter your question or prompt here..."
-              rows={5}
-              disabled={isLoading}
-              className="prompt-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
+      <div className="chat-messages">
+        {messages.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">💬</div>
+            <h2>Start a conversation</h2>
+            <p>Type a message below to get started</p>
           </div>
+        )}
 
-          <button 
-            type="submit" 
-            disabled={isLoading || !input.trim()}
-            className="submit-button"
-          >
-            {isLoading ? 'Processing...' : 'Submit'}
-          </button>
-        </form>
+        {messages.map((message) => (
+          <div key={message.id} className={`message-wrapper ${message.role}`}>
+            <div className="message-avatar">
+              {message.role === "user" ? "👤" : "🤖"}
+            </div>
+            <div className="message-bubble">
+              <div className="message-header">
+                {message.role === "user" ? "You" : "AI Assistant"}
+              </div>
+              <div className="message-content">
+                {renderMessageContent(message)}
+              </div>
+            </div>
+          </div>
+        ))}
 
         {isLoading && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Streaming response...</p>
+          <div className="message-wrapper assistant">
+            <div className="message-avatar">🤖</div>
+            <div className="message-bubble">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
           </div>
         )}
 
         {error && (
-          <div className="error-message">
-            <h3>Error</h3>
-            <p>{error.message}</p>
+          <div className="error-banner">
+            <span className="error-icon">⚠️</span>
+            <span>{error.message}</span>
           </div>
         )}
 
-        {messages.length > 0 && (
-          <div className="messages-container">
-            <h3>Conversation:</h3>
-            {messages.map((message) => {
-              // Extract text from message parts
-              const content = message.parts
-                .filter((part: any) => part.type === 'text')
-                .map((part: any) => part.text)
-                .join('');
-              
-              return (
-                <div 
-                  key={message.id} 
-                  className={`message ${message.role}`}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="chat-input-container">
+        {attachedFiles.length > 0 && (
+          <div className="attached-files">
+            {attachedFiles.map((file, index) => (
+              <div key={index} className="file-chip">
+                <span>📎 {file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="file-remove"
                 >
-                  <strong>{message.role === 'user' ? 'You' : 'AI'}:</strong>
-                  <div className="message-content">
-                    {content}
-                  </div>
-                </div>
-              );
-            })}
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         )}
-      </main>
 
-      <footer className="App-footer">
-        <p>Powered by FastAPI + LangChain + React + Vercel AI SDK</p>
-      </footer>
+        <form onSubmit={handleSubmit} className="chat-input-form">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="attach-button"
+            title="Attach file"
+            disabled={isLoading}
+          >
+            📎
+          </button>
+          
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message... (Enter to send, Shift+Enter for newline)"
+            disabled={isLoading}
+            className="chat-input"
+            rows={1}
+          />
+          
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="send-button"
+            title="Send message"
+          >
+            {isLoading ? "⏳" : "📤"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
