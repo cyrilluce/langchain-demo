@@ -1,0 +1,10 @@
+[
+    {"type": "step-start"},
+    {"type": "tool-input-start", "toolCallId": "call_tool1", "toolName": "get_weather"},
+    {"type": "tool-input-start", "toolCallId": "call_tool2", "toolName": "get_time"},
+    {"type": "tool-input-delta", "toolCallId": "call_tool1", "delta": "{\"city\":\"SF\"}"},
+    {"type": "tool-input-delta", "toolCallId": "call_tool2", "delta": "{\"tz\":\"PST\"}"},
+    {"type": "tool-input-available", "toolCallId": "call_tool1", "toolName": "get_weather", "input": "{\"city\":\"SF\"}"},
+    {"type": "tool-input-available", "toolCallId": "call_tool2", "toolName": "get_time", "input": "{\"tz\":\"PST\"}"},
+    {"type": "step-end"}
+]

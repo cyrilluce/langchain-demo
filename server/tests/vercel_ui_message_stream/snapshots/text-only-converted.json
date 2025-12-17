@@ -1,0 +1,8 @@
+[
+    {"type": "step-start"},
+    {"type": "text-start", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f111"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f111", "delta": "Hello"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f111", "delta": " world"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f111", "delta": "!"},
+    {"type": "step-end"}
+]

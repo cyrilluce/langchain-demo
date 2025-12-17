@@ -1,0 +1,6 @@
+[
+    {"type": "step-start"},
+    {"type": "tool-output-available", "toolCallId": "call_search_123", "output": {"type": "text", "content": "Document 1: Introduction to AI", "tool_call_id": "call_search_123"}},
+    {"type": "tool-output-available", "toolCallId": "call_search_123", "output": {"type": "text", "content": "Document 2: Machine Learning Basics", "tool_call_id": "call_search_123"}},
+    {"type": "step-end"}
+]

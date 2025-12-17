@@ -1,0 +1,16 @@
+[
+  {
+    "type": "tool",
+    "data": {
+      "content": "",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "tool",
+      "name": "empty_tool",
+      "id": "2b345678-9cde-0ef1-2345-67890bcdef01",
+      "tool_call_id": "call_empty_456",
+      "artifact": null,
+      "status": "success"
+    }
+  }
+]

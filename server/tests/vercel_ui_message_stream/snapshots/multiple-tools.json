@@ -1,0 +1,86 @@
+[
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "call_tool1",
+            "type": "function",
+            "function": {"name": "get_weather", "arguments": ""}
+          },
+          {
+            "index": 1,
+            "id": "call_tool2",
+            "type": "function",
+            "function": {"name": "get_time", "arguments": ""}
+          }
+        ]
+      },
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3111",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [
+        {"name": "get_weather", "args": "", "id": "call_tool1", "index": 0, "type": "tool_call_chunk"},
+        {"name": "get_time", "args": "", "id": "call_tool2", "index": 1, "type": "tool_call_chunk"}
+      ],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "call_tool1",
+            "type": "function",
+            "function": {"name": "", "arguments": "{\"city\":\"SF\"}"}
+          },
+          {
+            "index": 1,
+            "id": "call_tool2",
+            "type": "function",
+            "function": {"name": "", "arguments": "{\"tz\":\"PST\"}"}
+          }
+        ]
+      },
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3111",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [
+        {"name": "", "args": "{\"city\":\"SF\"}", "id": "call_tool1", "index": 0, "type": "tool_call_chunk"},
+        {"name": "", "args": "{\"tz\":\"PST\"}", "id": "call_tool2", "index": 1, "type": "tool_call_chunk"}
+      ],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3111",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": "last"
+    }
+  }
+]

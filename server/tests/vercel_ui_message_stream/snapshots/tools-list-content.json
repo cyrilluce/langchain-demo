@@ -1,0 +1,27 @@
+[
+  {
+    "type": "tool",
+    "data": {
+      "content": [
+        {
+          "type": "text",
+          "content": "Document 1: Introduction to AI",
+          "tool_call_id": "call_search_123"
+        },
+        {
+          "type": "text", 
+          "content": "Document 2: Machine Learning Basics",
+          "tool_call_id": "call_search_123"
+        }
+      ],
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "tool",
+      "name": "search_documents",
+      "id": "1a234567-8bcd-9ef0-1234-56789abcdef0",
+      "tool_call_id": "call_search_123",
+      "artifact": null,
+      "status": "success"
+    }
+  }
+]

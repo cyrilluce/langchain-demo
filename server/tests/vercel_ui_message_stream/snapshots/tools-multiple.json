@@ -1,0 +1,30 @@
+[
+  {
+    "type": "tool",
+    "data": {
+      "content": "It's always sunny in SF!",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "tool",
+      "name": "get_weather",
+      "id": "8f360801-2bc9-46b6-bd76-8ffbac741008",
+      "tool_call_id": "call_a7f9a91f8f3244d59a3adf",
+      "artifact": null,
+      "status": "success"
+    }
+  },
+  {
+    "type": "tool",
+    "data": {
+      "content": "Population is 874,961",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "tool",
+      "name": "get_population",
+      "id": "9g471912-3cd0-57c7-ce87-9gghbd852119",
+      "tool_call_id": "call_b8g0b92g9g4355e60b4beg",
+      "artifact": null,
+      "status": "success"
+    }
+  }
+]

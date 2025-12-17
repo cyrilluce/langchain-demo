@@ -6,7 +6,7 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # 根据 snapshot 验证
-async def testWithProcessor(
+async def runTestWithProcessor(
     input: str,
     output: str,
     processor: Callable[[AsyncIterator[BaseMessage]], AsyncIterator[dict]],
@@ -22,7 +22,7 @@ async def testWithProcessor(
             yield message
 
     async for chunk in processor(stream()):
-        expectChunk = expects.pop()
+        expectChunk = expects.pop(0)
         assert chunk == expectChunk, f"Chunk mismatch: {chunk} != {expectChunk}"
 
     assert len(expects) == 0, "消息都处理了"
