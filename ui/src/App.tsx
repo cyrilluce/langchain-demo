@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, UIMessage } from "ai";
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
@@ -31,7 +31,10 @@ function App() {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        200
+      )}px`;
     }
   }, [input]);
 
@@ -62,29 +65,29 @@ function App() {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const renderMessageContent = (message: any) => {
-    const textParts = message.parts.filter((part: any) => part.type === "text");
-    const toolParts = message.parts.filter((part: any) => 
-      part.type === "tool-call" || part.type === "tool-result"
-    );
-
+  const renderMessageContent = (message: UIMessage) => {
     return (
       <>
-        {textParts.map((part: any, idx: number) => (
-          <div key={`text-${idx}`} className="message-text">
-            {part.text}
-          </div>
-        ))}
-        {toolParts.map((part: any, idx: number) => (
-          <details key={`tool-${idx}`} className="tool-call">
-            <summary>
-              {part.type === "tool-call" ? "🔧 Tool Call" : "📋 Tool Result"}
-            </summary>
-            <pre className="tool-json">
-              {JSON.stringify(part, null, 2)}
-            </pre>
-          </details>
-        ))}
+        {message.parts.map((part, idx) => {
+          if (part.type === "text") {
+            return (
+              <div key={`text-${idx}`} className="message-text">
+                {part.text}
+              </div>
+            );
+          } else if (part.type.startsWith("tool-")) {
+            return (
+              <details key={`tool-${idx}`} className="tool-call">
+                <summary>
+                  {part.type}
+                </summary>
+                <pre className="tool-json">{JSON.stringify(part, null, 2)}</pre>
+              </details>
+            );
+          } else if(part.type === 'step-start'){
+            return <hr />
+          }
+        })}
       </>
     );
   };
@@ -179,7 +182,7 @@ function App() {
           >
             📎
           </button>
-          
+
           <textarea
             ref={textareaRef}
             value={input}
@@ -190,7 +193,7 @@ function App() {
             className="chat-input"
             rows={1}
           />
-          
+
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
