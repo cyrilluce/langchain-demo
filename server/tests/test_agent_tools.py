@@ -47,7 +47,7 @@ async def test_with_tools() -> None:
     agent.add_tool(get_current_time)
 
     print(f"Tools added: {len(agent.tools)}")
-    print(f"Tool names: {[t.name for t in agent.tools]}\n")
+    print(f"Tool names: {[getattr(t, 'name', str(t)) for t in agent.tools]}\n")
 
     # Test calculation tool
     response = await agent.ainvoke("What is 25 * 4? Use the calculator tool.")

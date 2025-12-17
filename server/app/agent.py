@@ -13,6 +13,11 @@ import asyncio
 import logging
 
 
+def get_weather(city: str) -> str:
+    """Get weather for a given city."""
+
+    return f"It's always sunny in {city}!"
+
 class LLMAgent:
     """LangChain Agent with Aliyun Dashscope integration and fallback support."""
 
@@ -22,8 +27,9 @@ class LLMAgent:
         self.llm = ChatTongyi(
             model=config.DASHSCOPE_MODEL,
             api_key=SecretStr(api_key) if api_key else None,
+            streaming=True
         )
-        self.tools: List = []  # Empty tools list, ready for future additions
+        self.tools: List = [get_weather]  # Empty tools list, ready for future additions
         self.agent = create_agent(
             model=self.llm,
             tools=self.tools,  # Empty for now, ready for future tools
@@ -304,7 +310,6 @@ class LLMAgent:
             if self.agent:
                 async for chunk, _ in self.agent.astream(
                     {"messages": [HumanMessage(content=prompt_text)]},
-                    config=config,
                     stream_mode="messages",
                 ):
                     # Yield the raw chunk for conversion
