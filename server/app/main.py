@@ -2,6 +2,9 @@
 FastAPI application entry point.
 """
 
+import json
+from typing import AsyncIterator
+from app.vercel_ui_message_stream.converter import StreamToVercelConverter
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -9,7 +12,6 @@ from .models import PromptRequest, AgentResponse, ErrorResponse, HealthResponse
 from .agent import agent
 from .config import config
 from .ui_message_stream import (
-    UIMessageStreamConverter,
     VERCEL_UI_STREAM_HEADERS,
     extract_prompt_from_messages,
 )
@@ -87,13 +89,15 @@ async def process_agent_request_stream(request: Request):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    converter = UIMessageStreamConverter()
+    converter = StreamToVercelConverter()
 
-    async def event_stream():
+    async def event_stream() -> AsyncIterator[str]:
         # Use the new astream_messages method that returns AIMessageChunk objects
         message_stream = agent.astream_messages(prompt)
-        async for frame in converter.stream_converter.convert_stream(message_stream):
-            yield frame
+        async for frame in converter.stream(message_stream):
+            # print(json.dumps(frame, ensure_ascii=False))
+            yield f'data: {json.dumps(frame, ensure_ascii=False)}\n\n'
+        yield "data: [DONE]\n\n"
 
     return StreamingResponse(
         event_stream(),

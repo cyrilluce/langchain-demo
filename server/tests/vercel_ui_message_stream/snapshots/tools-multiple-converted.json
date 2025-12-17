@@ -1,8 +1,8 @@
 [
-    {"type": "step-start"},
+    {"type": "start-step"},
     {"type": "tool-output-available", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "output": "It's always sunny in SF!"},
-    {"type": "step-end"},
-    {"type": "step-start"},
+    {"type": "finish-step"},
+    {"type": "start-step"},
     {"type": "tool-output-available", "toolCallId": "call_b8g0b92g9g4355e60b4beg", "output": "Population is 874,961"},
-    {"type": "step-end"}
+    {"type": "finish-step"}
 ]

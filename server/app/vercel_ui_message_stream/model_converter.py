@@ -98,7 +98,7 @@ class ModelStreamToVercelConverter:
                             yield {
                                 "type": "tool-input-delta",
                                 "toolCallId": tool_call_id,
-                                "delta": args_chunk,
+                                "inputTextDelta": args_chunk,
                             }
 
                 # 检查是否是最后一个 chunk（chunk_position == 'last'）

@@ -2,7 +2,7 @@
 LLM agent implementation using langchain agent framework with Aliyun Dashscope.
 """
 
-from typing import Optional, AsyncIterator, Dict, Any, Union, List
+from typing import Optional, AsyncIterator, Dict, Any, Union, List, cast
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, AIMessageChunk
 from langchain_core.runnables import RunnableConfig
@@ -280,9 +280,9 @@ class LLMAgent:
         self,
         input: Union[str, Dict[str, Any], BaseMessage],
         config: Optional[RunnableConfig] = None,
-    ) -> AsyncIterator[AIMessageChunk | str]:
+    ) -> AsyncIterator[BaseMessage]:
         """
-        Stream the agent's response as AIMessageChunk objects for proper conversion.
+        Stream the agent's response as BaseMessage objects for proper conversion.
 
         This method returns raw LangChain message chunks suitable for conversion
         to Vercel AI SDK UIMessage format.
@@ -292,17 +292,8 @@ class LLMAgent:
             config: Optional configuration
 
         Yields:
-            AIMessageChunk or ToolMessage objects
+            BaseMessage objects
         """
-        if self.fallback_mode:
-            prompt_text = self._extract_prompt(input)
-            response = self._fallback_response(prompt_text)
-            # Emit as chunks
-            for word in response.split():
-                yield AIMessageChunk(content=word + " ")
-                await asyncio.sleep(0.05)
-            return
-
         try:
             prompt_text = self._extract_prompt(input)
 
@@ -313,7 +304,7 @@ class LLMAgent:
                     stream_mode="messages",
                 ):
                     # Yield the raw chunk for conversion
-                    yield chunk
+                    yield cast(BaseMessage, chunk)
             else:
                 # No agent - use direct LLM streaming
                 if self.llm:

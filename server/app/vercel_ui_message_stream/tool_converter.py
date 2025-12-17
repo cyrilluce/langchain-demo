@@ -8,9 +8,9 @@ class ToolStreamToVercelConverter:
     将 LangChain ToolMessage 流转换为 Vercel AI SDK UIMessageChunk 流
 
     负责处理工具执行结果的流式输出，输出格式遵循 Vercel AI SDK 的流协议：
-    - step-start: 开始新的工具执行步骤
+    - start-step: 开始新的工具执行步骤
     - tool-output-available: 工具执行结果可用
-    - step-end: 结束工具执行步骤
+    - finish-step: 结束工具执行步骤
     """
 
     async def stream(
@@ -26,9 +26,9 @@ class ToolStreamToVercelConverter:
             dict: Vercel AI SDK UIMessageChunk 格式的事件字典
 
         流程:
-        1. 检测新消息，发送 step-start
+        1. 检测新消息，发送 start-step
         2. 解析 ToolMessage 内容，发送 tool-output-available
-        3. 消息结束时发送 step-end
+        3. 消息结束时发送 finish-step
         """
         current_id: str = ''
 
@@ -37,9 +37,9 @@ class ToolStreamToVercelConverter:
             if msg.id and current_id != msg.id:
                 # 如果有旧的 ID，先结束上一个步骤
                 if current_id:
-                    yield {"type": "step-end"}
+                    yield {"type": "finish-step"}
                 # 开始新的步骤
-                yield {"type": "step-start"}
+                yield {"type": "start-step"}
                 current_id = msg.id
 
             # 只处理 ToolMessage
@@ -87,6 +87,6 @@ class ToolStreamToVercelConverter:
                     f"[ToolStreamToVercelConverter]: 不支持的消息类型 {str(type(msg))}"
                 )
 
-        # 流结束，如果还有未结束的步骤，发送 step-end
+        # 流结束，如果还有未结束的步骤，发送 finish-step
         if current_id:
-            yield {"type": "step-end"}
+            yield {"type": "finish-step"}

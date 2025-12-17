@@ -1,5 +1,5 @@
 [
-    {"type": "step-start"},
+    {"type": "start-step"},
     {"type": "tool-output-available", "toolCallId": "call_empty_456", "output": ""},
-    {"type": "step-end"}
+    {"type": "finish-step"}
 ]

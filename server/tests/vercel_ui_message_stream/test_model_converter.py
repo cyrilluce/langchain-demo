@@ -15,7 +15,7 @@ class TestModelConverter:
     验证模型输出的正确转换，包括：
     - text-start/text-delta 事件
     - tool-input-start/tool-input-delta/tool-input-available 事件
-    - step-start/step-end 步骤管理
+    - start-step/finish-step 步骤管理
     """
 
     async def testMessages1(self) -> None:

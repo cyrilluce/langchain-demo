@@ -13,7 +13,7 @@ class TestToolConverter:
 
     测试 LangChain ToolMessage 流到 Vercel AI SDK UIMessageChunk 流的转换
     验证工具执行结果的正确转换，包括：
-    - step-start/step-end 事件
+    - start-step/finish-step 事件
     - tool-output-available 事件
     - toolCallId 的正确映射
     - output 内容的正确提取
@@ -24,10 +24,10 @@ class TestToolConverter:
         测试单个 ToolMessage 的转换
 
         验证：
-        - 正确生成 step-start 事件
+        - 正确生成 start-step 事件
         - 正确生成 tool-output-available 事件
         - 正确提取 toolCallId 和 output
-        - 正确生成 step-end 事件
+        - 正确生成 finish-step 事件
         """
         converter = ToolStreamToVercelConverter()
 
@@ -46,7 +46,7 @@ class TestToolConverter:
 
         验证：
         - 多个工具调用的正确处理
-        - 每个工具调用独立的 step-start/step-end
+        - 每个工具调用独立的 start-step/finish-step
         - 正确的 ID 跟踪和步骤分隔
         """
         converter = ToolStreamToVercelConverter()
