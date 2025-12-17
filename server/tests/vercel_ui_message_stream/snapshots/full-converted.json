@@ -1,0 +1,19 @@
+[
+    {"type": "step-start"},
+    {"type": "tool-input-start", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "toolName": "get_weather"},
+    {"type": "tool-input-delta", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "delta": "{\"city\": \""},
+    {"type": "tool-input-delta", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "delta": "SF\"}"},
+    {"type": "tool-input-available", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "toolName": "get_weather", "input": "{\"city\": \"SF\"}"},
+    {"type": "step-end"},
+    {"type": "step-start"},
+    {"type": "tool-output-available", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "output": "It's always sunny in SF!"},
+    {"type": "step-end"},
+    {"type": "step-start"},
+    {"type": "text-start", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632", "delta": "It"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632", "delta": "'s"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632", "delta": " always"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632", "delta": " sunny"},
+    {"type": "text-delta", "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632", "delta": " in SF!"},
+    {"type": "step-end"}
+]

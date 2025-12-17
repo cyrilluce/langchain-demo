@@ -2,7 +2,7 @@
 name = "langchain-demo-server"
 version = "0.1.0"
 description = "FastAPI LLM Agent Server with LangChain/LangGraph"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.124.2",
     "uvicorn[standard]>=0.38.0",

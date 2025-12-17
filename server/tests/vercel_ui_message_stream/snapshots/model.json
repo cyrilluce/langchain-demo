@@ -1,0 +1,268 @@
+[
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "call_a7f9a91f8f3244d59a3adf",
+            "type": "function",
+            "function": {
+              "name": "get_weather",
+              "arguments": ""
+            }
+          }
+        ]
+      },
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3dcb",
+      "tool_calls": [
+        {
+          "name": "get_weather",
+          "args": {},
+          "id": "call_a7f9a91f8f3244d59a3adf",
+          "type": "tool_call"
+        }
+      ],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [
+        {
+          "name": "get_weather",
+          "args": "",
+          "id": "call_a7f9a91f8f3244d59a3adf",
+          "index": 0,
+          "type": "tool_call_chunk"
+        }
+      ],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "call_a7f9a91f8f3244d59a3adf",
+            "type": "function",
+            "function": {
+              "name": "",
+              "arguments": "{\"city\": \""
+            }
+          }
+        ]
+      },
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3dcb",
+      "tool_calls": [
+        {
+          "name": "",
+          "args": {
+            "city": ""
+          },
+          "id": "call_a7f9a91f8f3244d59a3adf",
+          "type": "tool_call"
+        }
+      ],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [
+        {
+          "name": "",
+          "args": "{\"city\": \"",
+          "id": "call_a7f9a91f8f3244d59a3adf",
+          "index": 0,
+          "type": "tool_call_chunk"
+        }
+      ],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {
+        "tool_calls": [
+          {
+            "index": 0,
+            "id": "call_a7f9a91f8f3244d59a3adf",
+            "type": "function",
+            "function": {
+              "name": "",
+              "arguments": "SF\"}"
+            }
+          }
+        ]
+      },
+      "response_metadata": {
+        "finish_reason": "tool_calls",
+        "request_id": "405cbc76-788a-42fe-bb7d-83f704604c8c",
+        "token_usage": {
+          "input_tokens": 157,
+          "output_tokens": 19,
+          "total_tokens": 176,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      },
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3dcb",
+      "tool_calls": [],
+      "invalid_tool_calls": [
+        {
+          "name": "",
+          "args": "SF\"}",
+          "id": "call_a7f9a91f8f3244d59a3adf",
+          "error": null,
+          "type": "invalid_tool_call"
+        }
+      ],
+      "usage_metadata": null,
+      "tool_call_chunks": [
+        {
+          "name": "",
+          "args": "SF\"}",
+          "id": "call_a7f9a91f8f3244d59a3adf",
+          "index": 0,
+          "type": "tool_call_chunk"
+        }
+      ],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4032-7f91-ae67-ef00aa2a3dcb",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": "last"
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "It",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "'s",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": " always",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": " sunny",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": " in SF!",
+      "additional_kwargs": {},
+      "response_metadata": {
+        "finish_reason": "stop",
+        "request_id": "cb3f9fcd-8f21-46f5-86ba-e40516457364",
+        "token_usage": {
+          "input_tokens": 196,
+          "output_tokens": 7,
+          "total_tokens": 203,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      },
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": null
+    }
+  },
+  {
+    "type": "AIMessageChunk",
+    "data": {
+      "content": "",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "AIMessageChunk",
+      "name": null,
+      "id": "lc_run--019b2afd-4620-7b01-8c5f-5f4369a2f632",
+      "tool_calls": [],
+      "invalid_tool_calls": [],
+      "usage_metadata": null,
+      "tool_call_chunks": [],
+      "chunk_position": "last"
+    }
+  }
+]

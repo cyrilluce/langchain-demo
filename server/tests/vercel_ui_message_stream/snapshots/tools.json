@@ -1,0 +1,16 @@
+[
+  {
+    "type": "tool",
+    "data": {
+      "content": "It's always sunny in SF!",
+      "additional_kwargs": {},
+      "response_metadata": {},
+      "type": "tool",
+      "name": "get_weather",
+      "id": "8f360801-2bc9-46b6-bd76-8ffbac741008",
+      "tool_call_id": "call_a7f9a91f8f3244d59a3adf",
+      "artifact": null,
+      "status": "success"
+    }
+  }
+]

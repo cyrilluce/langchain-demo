@@ -209,7 +209,7 @@ class MessageMetadataEvent(BaseModel):
 
 
 # 定义完整的联合类型
-Event = Union[
+UIMessageChunk = Union[
     TextStart,
     TextDelta,
     TextEnd,
@@ -238,7 +238,7 @@ Event = Union[
 ]
 
 # 创建验证器
-event_validator = TypeAdapter(Event)
+event_validator = TypeAdapter(UIMessageChunk)
 
 
 def validateVercelUIMessageChunk(message: dict[str, Any]) -> None:
