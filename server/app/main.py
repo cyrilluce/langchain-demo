@@ -8,7 +8,7 @@ from app.vercel_ui_message_stream.converter import StreamToVercelConverter
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from .models import PromptRequest, AgentResponse, ErrorResponse, HealthResponse
+from .models import HealthResponse
 from .agent import agent
 from .config import config
 from .ui_message_stream import (
@@ -31,33 +31,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.post(
-    "/agent",
-    response_model=AgentResponse,
-    responses={503: {"model": ErrorResponse, "description": "LLM service unavailable"}},
-)
-async def process_agent_request(request: PromptRequest) -> AgentResponse:
-    """
-    Process a prompt with the LLM agent.
-
-    - **prompt**: User's text input (1-10000 characters)
-
-    Returns the agent's generated response or fallback message.
-    """
-    try:
-        answer = await agent.process_prompt(request.prompt)
-        return AgentResponse(answer=answer)
-    except Exception:
-        # Return HTTP 503 for LLM failures
-        raise HTTPException(
-            status_code=503,
-            detail={
-                "error": "LLM service temporarily unavailable. Please try again later.",
-                "code": "LLM_UNAVAILABLE",
-            },
-        )
 
 
 @app.get("/health", response_model=HealthResponse)
