@@ -1,3 +1,4 @@
+import json
 from typing import Any, AsyncIterator
 
 from langchain_core.messages import BaseMessage, ToolMessage
@@ -47,11 +48,17 @@ class ToolStreamToVercelConverter:
                 # ToolMessage.content 可能是字符串或者包含字典的列表
                 # 根据 LangChain 文档，content 通常是字符串
                 if isinstance(msg.content, str):
-                    # 简单字符串内容
+                    # 尝试解析 JSON，失败后返回原始字符串
+                    parsed_output = msg.content
+                    try:
+                        parsed_output = json.loads(msg.content)
+                    except (json.JSONDecodeError, TypeError):
+                        pass  # 保留原始字符串
+
                     yield {
                         "type": "tool-output-available",
                         "toolCallId": msg.tool_call_id,
-                        "output": msg.content,
+                        "output": parsed_output,
                     }
                 elif isinstance(msg.content, list):
                     # 列表格式内容（可能包含多个工具输出）

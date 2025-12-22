@@ -2,7 +2,7 @@
   {
     "type": "tool",
     "data": {
-      "content": "It's always sunny in SF!",
+      "content": "{\"SF\":\"Sunny\"}",
       "additional_kwargs": {},
       "response_metadata": {},
       "type": "tool",

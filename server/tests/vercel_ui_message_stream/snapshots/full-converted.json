@@ -3,7 +3,7 @@
     {"type": "tool-input-start", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "toolName": "get_weather"},
     {"type": "tool-input-delta", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "inputTextDelta": "{\"city\": \""},
     {"type": "tool-input-delta", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "inputTextDelta": "SF\"}"},
-    {"type": "tool-input-available", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "toolName": "get_weather", "input": "{\"city\": \"SF\"}"},
+    {"type": "tool-input-available", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "toolName": "get_weather", "input": {"city": "SF"}},
     {"type": "finish-step"},
     {"type": "start-step"},
     {"type": "tool-output-available", "toolCallId": "call_a7f9a91f8f3244d59a3adf", "output": "It's always sunny in SF!"},

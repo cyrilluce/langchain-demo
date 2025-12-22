@@ -4,7 +4,7 @@
     {"type": "tool-input-start", "toolCallId": "call_tool2", "toolName": "get_time"},
     {"type": "tool-input-delta", "toolCallId": "call_tool1", "inputTextDelta": "{\"city\":\"SF\"}"},
     {"type": "tool-input-delta", "toolCallId": "call_tool2", "inputTextDelta": "{\"tz\":\"PST\"}"},
-    {"type": "tool-input-available", "toolCallId": "call_tool1", "toolName": "get_weather", "input": "{\"city\":\"SF\"}"},
-    {"type": "tool-input-available", "toolCallId": "call_tool2", "toolName": "get_time", "input": "{\"tz\":\"PST\"}"},
+    {"type": "tool-input-available", "toolCallId": "call_tool1", "toolName": "get_weather", "input": {"city": "SF"}},
+    {"type": "tool-input-available", "toolCallId": "call_tool2", "toolName": "get_time", "input": {"tz": "PST"}},
     {"type": "finish-step"}
 ]

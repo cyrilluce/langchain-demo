@@ -41,13 +41,13 @@
         "tool_calls": [
           {
             "index": 0,
-            "id": "call_tool1",
+            "id": "",
             "type": "function",
             "function": {"name": "", "arguments": "{\"city\":\"SF\"}"}
           },
           {
             "index": 1,
-            "id": "call_tool2",
+            "id": "",
             "type": "function",
             "function": {"name": "", "arguments": "{\"tz\":\"PST\"}"}
           }
@@ -61,8 +61,8 @@
       "invalid_tool_calls": [],
       "usage_metadata": null,
       "tool_call_chunks": [
-        {"name": "", "args": "{\"city\":\"SF\"}", "id": "call_tool1", "index": 0, "type": "tool_call_chunk"},
-        {"name": "", "args": "{\"tz\":\"PST\"}", "id": "call_tool2", "index": 1, "type": "tool_call_chunk"}
+        {"name": "", "args": "{\"city\":\"SF\"}", "id": "", "index": 0, "type": "tool_call_chunk"},
+        {"name": "", "args": "{\"tz\":\"PST\"}", "id": "", "index": 1, "type": "tool_call_chunk"}
       ],
       "chunk_position": null
     }

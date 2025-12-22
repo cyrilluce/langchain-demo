@@ -1,3 +1,4 @@
+import json
 from typing import Any, AsyncIterator
 
 from langchain_core.messages import AIMessageChunk, BaseMessage
@@ -19,6 +20,7 @@ class ModelStreamToVercelConverter:
         self.tool_call_started: dict[str, bool] = {}
         self.tool_args_buffer: dict[str, str] = {}
         self.tool_names: dict[str, str] = {}  # 保存工具名称
+        self.index_to_id: dict[int, str] = {}  # index 到 id 的映射
 
     async def stream(
         self, stream: AsyncIterator[BaseMessage]
@@ -46,6 +48,7 @@ class ModelStreamToVercelConverter:
                 self.tool_call_started = {}
                 self.tool_args_buffer = {}
                 self.tool_names = {}
+                self.index_to_id = {}
 
             if isinstance(msg, AIMessageChunk):
                 # 处理 reasoning 内容（如果存在）
@@ -68,7 +71,19 @@ class ModelStreamToVercelConverter:
                 # 处理工具调用 chunks
                 if hasattr(msg, 'tool_call_chunks') and msg.tool_call_chunks:
                     for chunk in msg.tool_call_chunks:
-                        tool_call_id = chunk.get('id')
+                        # 获取工具调用的 ID 和 index
+                        tool_call_id = chunk.get('id', '')
+                        index = chunk.get('index')
+
+                        # 如果有 ID，记录 index 到 ID 的映射
+                        if tool_call_id and index is not None:
+                            self.index_to_id[index] = tool_call_id
+
+                        # 如果没有 ID，尝试从 index 映射中获取
+                        if not tool_call_id and index is not None:
+                            tool_call_id = self.index_to_id.get(index, '')
+
+                        # 如果还是没有 ID，跳过
                         if not tool_call_id:
                             continue
 
@@ -112,11 +127,18 @@ class ModelStreamToVercelConverter:
                             # 获取保存的工具名称
                             tool_name = self.tool_names.get(tool_call_id, '')
 
+                            # 尝试解析 JSON，失败后返回原始字符串
+                            parsed_input = args_buffer
+                            try:
+                                parsed_input = json.loads(args_buffer)
+                            except (json.JSONDecodeError, TypeError):
+                                pass  # 保留原始字符串
+
                             yield {
                                 "type": "tool-input-available",
                                 "toolCallId": tool_call_id,
                                 "toolName": tool_name,
-                                "input": args_buffer,
+                                "input": parsed_input,
                             }
             else:
                 print(
