@@ -36,7 +36,7 @@ Functional Requirements (Testable)
 ---------------------------------
 
 1. Server exposes an HTTP endpoint `POST /agent` that accepts JSON `{ "prompt": "..." }` and returns `{ "answer": "..." }`.
-   - Test: `curl -X POST http://localhost:8000/agent -d '{"prompt":"hi"}'` returns 200 and JSON with `answer`.
+   - Test: `curl -X POST http://localhost:5001/agent -d '{"prompt":"hi"}'` returns 200 and JSON with `answer`.
    - Error handling: When LLM API is unavailable, rate-limited, or times out, server returns HTTP 503 with JSON `{ "error": "<message>" }`.
 
 2. Server includes minimal integration example using `langchain` / `langgraph` APIs with Aliyun as the LLM provider.

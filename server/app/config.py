@@ -19,7 +19,7 @@ class Config:
 
     # Server configuration
     HOST: str = os.getenv("HOST", "0.0.0.0")
-    PORT: int = int(os.getenv("PORT", "8000"))
+    PORT: int = int(os.getenv("PORT", "5001"))
 
     @classmethod
     def is_llm_configured(cls) -> bool:

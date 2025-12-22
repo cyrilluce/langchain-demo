@@ -61,22 +61,22 @@ Quick start with the included script:
 Or run directly:
 
 ```bash
-uv run python -m uvicorn app.main:app --reload --port 8000
+uv run python -m uvicorn app.main:app --reload --port 5001
 ```
 
 Or with activated virtual environment:
 
 ```bash
 source .venv/bin/activate
-python -m uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 5001
 ```
 
-The server will be available at <http://localhost:8000>
+The server will be available at <http://localhost:5001>
 
 ### Production Mode
 
 ```bash
-uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 5001 --workers 4
 ```
 
 ## API Endpoints
@@ -156,7 +156,7 @@ pytest tests/ --cov=app --cov-report=html
 | `DASHSCOPE_API_KEY` | No | - | Aliyun Dashscope API key |
 | `DASHSCOPE_MODEL` | No | `qwen-turbo` | Qwen model to use |
 | `HOST` | No | `0.0.0.0` | Server host |
-| `PORT` | No | `8000` | Server port |
+| `PORT` | No | `5001` | Server port |
 
 ## Project Structure
 
@@ -195,7 +195,7 @@ pip install langchain langchain-community dashscope --force-reinstall
  run uv
 ### Port Already in Use
 
-If port 8000 is already in use, specify a different port:
+If port 5001 is already in use, specify a different port:
 
 ```bash
 uv run python -m uvicorn app.main:app --reload --port 8001

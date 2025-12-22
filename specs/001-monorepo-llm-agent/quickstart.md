@@ -34,12 +34,12 @@ pip install -r requirements.txt
 export DASHSCOPE_API_KEY="your-api-key-here"
 
 # Start server
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 5001
 ```
 
 **Expected output**:
 ```
-INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://127.0.0.1:5001 (Press CTRL+C to quit)
 INFO:     Started reloader process
 INFO:     Started server process
 INFO:     Waiting for application startup.
@@ -47,7 +47,7 @@ INFO:     Waiting for application startup.
 
 **Test endpoint**:
 ```bash
-curl -X POST http://localhost:8000/agent \
+curl -X POST http://localhost:5001/agent \
   -H "Content-Type: application/json" \
   -d '{"prompt":"Hello, who are you?"}'
 ```
@@ -93,7 +93,7 @@ Navigate to [http://localhost:5173](http://localhost:5173)
 |----------|----------|---------|-------------|
 | `DASHSCOPE_API_KEY` | No | - | Aliyun Dashscope API key for LLM access |
 | `DASHSCOPE_MODEL` | No | `qwen-turbo` | Model to use (qwen-turbo, qwen-plus, qwen-max) |
-| `PORT` | No | `8000` | Server port |
+| `PORT` | No | `5001` | Server port |
 
 ### Configuration Files
 
@@ -128,7 +128,7 @@ Expected: Component and API service tests pass
 
 ### Manual Integration Test
 
-1. Server running on port 8000
+1. Server running on port 5001
 2. UI running on port 5173
 3. Submit prompt "Test integration"
 4. Verify response displays without CORS errors
@@ -191,7 +191,7 @@ After verifying the basic setup:
 ┌─────────────────┐         ┌──────────────────┐
 │   Browser UI    │         │  FastAPI Server  │
 │  (React + TS)   │ ◄─────► │  (Python 3.10+)  │
-│  localhost:5173 │  HTTP   │  localhost:8000  │
+│  localhost:5173 │  HTTP   │  localhost:5001  │
 └─────────────────┘         └────────┬─────────┘
                                      │
                                      ▼

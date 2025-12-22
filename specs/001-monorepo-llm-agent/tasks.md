@@ -57,7 +57,7 @@ This is a **web application** monorepo:
 **Independent Test**:
 
 ```bash
-curl -X POST http://localhost:8000/agent -H "Content-Type: application/json" -d '{"prompt":"Hello"}'
+curl -X POST http://localhost:5001/agent -H "Content-Type: application/json" -d '{"prompt":"Hello"}'
 # Expected: {"answer": "..."}
 ```
 
@@ -242,7 +242,7 @@ T019 → T020 → T021 → T022 → T023 → T024 → T025 → T026 → T027 →
 ### Validation Per Phase
 
 - **After Phase 2**: Verify file structure matches plan.md
-- **After Phase 3**: Run `curl http://localhost:8000/agent -X POST -d '{"prompt":"test"}'`
+- **After Phase 3**: Run `curl http://localhost:5001/agent -X POST -d '{"prompt":"test"}'`
 - **After Phase 4**: Open browser to <http://localhost:5173> and submit prompt
 - **After Phase 5**: Follow quickstart.md from scratch in clean environment
 

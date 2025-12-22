@@ -45,7 +45,7 @@ cd server
 uv sync
 
 # 快速启动
-./dev.sh  # 在 :8000 端口运行带热重载的 uvicorn
+./dev.sh  # 在 :5001 端口运行带热重载的 uvicorn
 
 # 可选: 设置 LLM 凭证
 export DASHSCOPE_API_KEY="sk-..."
@@ -59,7 +59,7 @@ bun install  # 不是 npm/yarn - 使用 Bun
 bun run dev  # Vite 开发服务器在 :5173 端口
 
 # 环境配置
-# 创建 .env.local: VITE_API_BASE_URL=http://localhost:8000
+# 创建 .env.local: VITE_API_BASE_URL=http://localhost:5001
 ```
 
 ### 测试

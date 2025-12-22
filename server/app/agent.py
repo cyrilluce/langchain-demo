@@ -6,16 +6,18 @@ from typing import Optional, AsyncIterator, Dict, Any, Union, List, cast
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessageChunk
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
 from langchain.agents import create_agent
 from pydantic import SecretStr
 from .config import config
 import logging
 
 
-def get_weather(city: str) -> str:
+def get_weather(city: str) -> list:
     """Get weather for a given city."""
 
-    return f"It's always sunny in {city}!"
+    return [{"type": "json", "value": {f"{city}": "Sunny"}}]
+
 
 class LLMAgent:
     """LangChain Agent with Aliyun Dashscope integration and fallback support."""
@@ -26,7 +28,7 @@ class LLMAgent:
         self.llm = ChatTongyi(
             model=config.DASHSCOPE_MODEL,
             api_key=SecretStr(api_key) if api_key else None,
-            streaming=True
+            streaming=True,
         )
         self.tools: List = [get_weather]  # Empty tools list, ready for future additions
         self.agent = create_agent(
@@ -35,7 +37,6 @@ class LLMAgent:
             system_prompt="You are a helpful AI assistant. Answer the user's questions concisely.",
         )
         self.fallback_mode = not config.is_llm_configured()
-
 
     def _extract_prompt(self, input: Union[str, Dict[str, Any], BaseMessage]) -> str:
         """
@@ -104,6 +105,7 @@ class LLMAgent:
             logging.error(f"Error in astream_messages: {str(e)}")
             yield AIMessageChunk(content=f"Error: {str(e)}")
             raise Exception(f"LLM service error: {str(e)}")
+
 
 # Global agent instance
 agent = LLMAgent()

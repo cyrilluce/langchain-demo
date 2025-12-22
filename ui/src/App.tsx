@@ -12,7 +12,7 @@ function App() {
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL
     ? `${import.meta.env.VITE_API_BASE_URL}/agent/stream`
-    : "http://localhost:8000/agent/stream";
+    : "http://localhost:5001/agent/stream";
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({

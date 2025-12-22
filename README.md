@@ -31,10 +31,10 @@ pip install -r requirements.txt
 export DASHSCOPE_API_KEY="your-api-key-here"
 
 # Start server
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 5001
 ```
 
-Server will be available at http://localhost:8000
+Server will be available at http://localhost:5001
 
 ### 2. Start the UI
 

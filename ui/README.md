@@ -16,7 +16,7 @@ React + TypeScript frontend for the LLM Agent demo, built with Vite and Bun.
 ### Prerequisites
 
 - Bun (latest version) - Install from [bun.sh](https://bun.sh)
-- Running FastAPI server on port 8000
+- Running FastAPI server on port 5001
 
 ### Setup
 
@@ -28,7 +28,7 @@ bun install
 
 2. Verify server is running:
 
-The UI expects the server to be available at http://localhost:8000
+The UI expects the server to be available at http://localhost:5001
 
 ## Running the Application
 
@@ -112,7 +112,7 @@ ui/
 The API base URL is configured in `src/services/api.ts`:
 
 ```typescript
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:5001';
 ```
 
 To use a different server URL, update this constant.
@@ -137,7 +137,7 @@ If you see CORS errors in the browser console:
 ### Connection Refused
 
 If the UI can't connect to the server:
-1. Verify the server is running: `curl http://localhost:8000/health`
+1. Verify the server is running: `curl http://localhost:5001/health`
 2. Check the server port matches API_BASE_URL
 3. Ensure no firewall is blocking the connection
 
