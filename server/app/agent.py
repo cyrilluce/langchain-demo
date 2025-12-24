@@ -6,17 +6,20 @@ from typing import Optional, AsyncIterator, Dict, Any, Union, List, cast
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessageChunk
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import tool
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.store.memory import InMemoryStore
 from langchain.agents import create_agent
 from pydantic import SecretStr
 from .config import config
+from psycopg_pool import AsyncConnectionPool
+from psycopg.rows import dict_row
 import logging
 
 
-def get_weather(city: str) -> list:
+def get_weather(city: str) -> Any:
     """Get weather for a given city."""
 
-    return [{"type": "json", "value": {f"{city}": "Sunny"}}]
+    return {f"{city}": "Sunny"}
 
 
 class LLMAgent:
@@ -31,12 +34,29 @@ class LLMAgent:
             streaming=True,
         )
         self.tools: List = [get_weather]  # Empty tools list, ready for future additions
+        self.store = InMemoryStore()
+        self.pool = AsyncConnectionPool(
+            "postgresql://noeticai:noeticai@localhost:5432/langchain_demo",
+            kwargs={
+                "autocommit": True,  # Critical
+                "row_factory": dict_row,
+                "prepare_threshold": 0,
+            },
+            open=True,
+        )
+        self.checkpointer = AsyncPostgresSaver(self.pool)  # type: ignore
+        self.agent: Any
+        self.fallback_mode = not config.is_llm_configured()
         self.agent = create_agent(
             model=self.llm,
             tools=self.tools,  # Empty for now, ready for future tools
-            system_prompt="You are a helpful AI assistant. Answer the user's questions concisely.",
+            system_prompt=(
+                "You are a helpful AI assistant. "
+                "Answer the user's questions concisely."
+            ),
+            checkpointer=self.checkpointer,
+            # store=self.store
         )
-        self.fallback_mode = not config.is_llm_configured()
 
     def _extract_prompt(self, input: Union[str, Dict[str, Any], BaseMessage]) -> str:
         """
@@ -87,14 +107,38 @@ class LLMAgent:
         try:
             prompt_text = self._extract_prompt(input)
 
+            user_id = "1"
+            config = {"configurable": {"thread_id": "1", "user_id": user_id}}
+
             # Stream using messages mode to get proper AIMessageChunk objects
             if self.agent:
-                async for chunk, _ in self.agent.astream(
+                async for stream_mode, payload in self.agent.astream(
                     {"messages": [HumanMessage(content=prompt_text)]},
-                    stream_mode="messages",
+                    config,
+                    stream_mode=[
+                        "messages",
+                        "checkpoints",
+                        "custom",
+                        "debug",
+                        "tasks",
+                        "updates",
+                        "values",
+                    ],
+                    print_mode=[
+                        "messages",
+                        "checkpoints",
+                        "custom",
+                        "debug",
+                        "tasks",
+                        "updates",
+                        "values",
+                    ],
                 ):
-                    # Yield the raw chunk for conversion
-                    yield cast(BaseMessage, chunk)
+                    if stream_mode == "messages":
+                        [chunk, _] = cast(tuple[BaseMessage, dict[str, Any]], payload)
+                        # Yield the raw chunk for conversion
+                        yield chunk
+
             else:
                 # No agent - use direct LLM streaming
                 if self.llm:
