@@ -16,7 +16,7 @@ from psycopg.rows import dict_row
 import logging
 
 
-def get_weather(city: str) -> Any:
+def get_weather(city: str) -> dict[str, str]:
     """Get weather for a given city."""
 
     return {f"{city}": "Sunny"}
@@ -25,8 +25,14 @@ def get_weather(city: str) -> Any:
 class LLMAgent:
     """LangChain Agent with Aliyun Dashscope integration and fallback support."""
 
-    def __init__(self) -> None:
-        """Initialize the agent with LLM and tools (prepared for future expansion)."""
+    def __init__(self, init_pool: bool = True) -> None:
+        """
+        Initialize the agent with LLM and tools (prepared for future expansion).
+
+        Args:
+            init_pool: Whether to initialize the connection pool immediately.
+                      Set to False for testing to avoid async pool issues.
+        """
         api_key = config.DASHSCOPE_API_KEY
         self.llm = ChatTongyi(
             model=config.DASHSCOPE_MODEL,
@@ -35,16 +41,19 @@ class LLMAgent:
         )
         self.tools: List = [get_weather]  # Empty tools list, ready for future additions
         self.store = InMemoryStore()
-        self.pool = AsyncConnectionPool(
-            "postgresql://noeticai:noeticai@localhost:5432/langchain_demo",
-            kwargs={
-                "autocommit": True,  # Critical
-                "row_factory": dict_row,
-                "prepare_threshold": 0,
-            },
-            open=True,
-        )
-        self.checkpointer = AsyncPostgresSaver(self.pool)  # type: ignore
+        if init_pool:
+            self.pool = AsyncConnectionPool(
+                "postgresql://noeticai:noeticai@localhost:5432/langchain_demo",
+                kwargs={
+                    "autocommit": True,  # Critical
+                    "row_factory": dict_row,
+                    "prepare_threshold": 0,
+                },
+                open=True,
+            )
+            self.checkpointer = AsyncPostgresSaver(self.pool)  # type: ignore
+        else:
+            self.checkpointer = None  # type: ignore
         self.agent: Any
         self.fallback_mode = not config.is_llm_configured()
         self.agent = create_agent(
@@ -86,6 +95,39 @@ class LLMAgent:
             f"(LLM not configured. Set DASHSCOPE_API_KEY to enable AI responses.)"
         )
 
+    async def get_history(
+        self, thread_id: str, checkpoint_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get conversation history for a thread.
+
+        Args:
+            thread_id: The thread ID to get history for
+            checkpoint_id: Optional checkpoint ID to get history up to that point
+
+        Returns:
+            List of message dictionaries
+        """
+        try:
+            config = {"configurable": {"thread_id": thread_id}}
+            if checkpoint_id:
+                config["configurable"]["checkpoint_id"] = checkpoint_id
+
+            state = await self.agent.aget_state(config)
+            messages = state.values.get("messages", [])
+
+            # Convert messages to dictionaries
+            return [
+                {
+                    "role": "user" if msg.type == "human" else "assistant",
+                    "content": msg.content,
+                }
+                for msg in messages
+            ]
+        except Exception as e:
+            logging.error(f"Error getting history: {str(e)}")
+            return []
+
     async def astream_messages(
         self,
         input: Union[str, Dict[str, Any], BaseMessage],
@@ -99,7 +141,7 @@ class LLMAgent:
 
         Args:
             input: The input (same as astream)
-            config: Optional configuration
+            config: Optional configuration with thread_id and checkpoint_id
 
         Yields:
             BaseMessage objects
@@ -107,8 +149,10 @@ class LLMAgent:
         try:
             prompt_text = self._extract_prompt(input)
 
-            user_id = "1"
-            config = {"configurable": {"thread_id": "1", "user_id": user_id}}
+            # Use provided config or default to thread_id "1"
+            if config is None:
+                user_id = "1"
+                config = {"configurable": {"thread_id": "1", "user_id": user_id}}
 
             # Stream using messages mode to get proper AIMessageChunk objects
             if self.agent:

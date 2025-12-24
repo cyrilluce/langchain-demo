@@ -103,3 +103,32 @@ export async function checkHealth(): Promise<{ status: string; llm_configured: b
     throw new ApiError('Failed to check server health');
   }
 }
+
+/**
+ * Get conversation history for a thread
+ */
+export async function getHistory(
+  threadId: string,
+  checkpointId?: string
+): Promise<Array<{ role: string; content: string }>> {
+  try {
+    const url = new URL(`${API_BASE_URL}/chat/${threadId}/history`);
+    if (checkpointId) {
+      url.searchParams.set('checkpoint_id', checkpointId);
+    }
+
+    const response = await fetch(url.toString());
+    
+    if (!response.ok) {
+      throw new ApiError(`Failed to get history: ${response.statusText}`, undefined, response.status);
+    }
+
+    const data = await response.json();
+    return data.messages || [];
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError('Failed to get conversation history');
+  }
+}
