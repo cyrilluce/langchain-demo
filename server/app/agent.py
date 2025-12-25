@@ -13,6 +13,7 @@ from pydantic import SecretStr
 from .config import config
 from psycopg_pool import AsyncConnectionPool
 from psycopg.rows import dict_row
+from .vercel_ui_message_transform.transform import convert_to_ui_messages
 import logging
 
 
@@ -117,13 +118,7 @@ class LLMAgent:
             messages = state.values.get("messages", [])
 
             # Convert messages to dictionaries
-            return [
-                {
-                    "role": "user" if msg.type == "human" else "assistant",
-                    "content": msg.content,
-                }
-                for msg in messages
-            ]
+            return convert_to_ui_messages(messages)
         except Exception as e:
             logging.error(f"Error getting history: {str(e)}")
             return []

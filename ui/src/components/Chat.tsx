@@ -39,15 +39,7 @@ function Chat() {
       setIsLoadingHistory(true);
       try {
         const history = await getHistory(threadId);
-        if (history.length > 0) {
-          // Convert history to UIMessage format
-          const uiMessages: UIMessage[] = history.map((msg, idx) => ({
-            id: `history-${idx}`,
-            role: msg.role as "user" | "assistant",
-            parts: [{ type: "text" as const, text: msg.content }],
-          }));
-          setMessages(uiMessages);
-        }
+        setMessages(history);
       } catch (err) {
         console.error("Failed to load history:", err);
       } finally {

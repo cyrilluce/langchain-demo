@@ -3,6 +3,7 @@
  * API service for communicating with the FastAPI backend
  */
 
+import { UIMessage } from 'ai';
 import type { AgentRequest, AgentResponse, ErrorResponse } from '../types';
 
 // Read API base URL from Vite env with a sensible default
@@ -110,7 +111,7 @@ export async function checkHealth(): Promise<{ status: string; llm_configured: b
 export async function getHistory(
   threadId: string,
   checkpointId?: string
-): Promise<Array<{ role: string; content: string }>> {
+): Promise<UIMessage[]> {
   try {
     const url = new URL(`${API_BASE_URL}/chat/${threadId}/history`);
     if (checkpointId) {
