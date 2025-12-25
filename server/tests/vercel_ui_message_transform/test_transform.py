@@ -117,9 +117,23 @@ class TestConvertToUIMessages:
         result = convert_to_ui_messages(messages)
 
         # Tool message should be merged into assistant message
+        # as single part with output
         assert len(result) == 1
         assert result[0]["role"] == "assistant"
-        assert len(result[0]["parts"]) == 3  # text + tool-call + tool-result
+        assert len(result[0]["parts"]) == 2  # text + merged tool part
+
+        # Check text part
+        assert result[0]["parts"][0]["type"] == "text"
+        assert result[0]["parts"][0]["text"] == "Checking weather..."
+
+        # Check merged tool part
+        tool_part = result[0]["parts"][1]
+        assert tool_part["type"] == "tool-get_weather"
+        assert tool_part["toolCallId"] == "call-1"
+        assert tool_part["input"] == {"city": "Tokyo"}
+        # Output should be JSON decoded
+        assert tool_part["output"] == {"temperature": 72, "condition": "sunny"}
+        assert tool_part["state"] == "output-available"
 
     def test_multiple_consecutive_assistants(self):
         """Test merging of consecutive assistant messages."""
@@ -265,11 +279,14 @@ class TestConvertAssistantBlock:
         ]
         result = _convert_assistant_block(messages)
 
-        assert len(result["parts"]) == 2
-        # First part is tool call, second is tool result
-        assert result["parts"][0]["type"] == "tool-search"
-        assert result["parts"][1]["type"] == "tool-search"
-        assert result["parts"][1]["output"] == "Search results..."
+        # Should have one merged tool part (not separate call and result)
+        assert len(result["parts"]) == 1
+        tool_part = result["parts"][0]
+        assert tool_part["type"] == "tool-search"
+        assert tool_part["toolCallId"] == "tc-1"
+        assert tool_part["input"] == {"q": "test"}
+        assert tool_part["output"] == "Search results..."
+        assert tool_part["state"] == "output-available"
 
     def test_empty_block(self):
         """Test conversion of empty block."""
@@ -312,3 +329,55 @@ class TestConvertToolMessageToPart:
         assert result["type"] == "tool-result"
         assert result["toolCallId"] == "call-456"
         assert result["toolName"] == ""
+
+    def test_tool_output_json_decode(self):
+        """Test that tool output is JSON decoded when possible."""
+        messages = [
+            AIMessage(
+                content="",
+                tool_calls=[
+                    {
+                        "id": "call-1",
+                        "name": "calculator",
+                        "args": {"a": 1, "b": 2},
+                    }
+                ],
+            ),
+            ToolMessage(
+                content='{"result": 3, "status": "success"}',
+                tool_call_id="call-1",
+                name="calculator",
+            ),
+        ]
+        result = convert_to_ui_messages(messages)
+
+        tool_part = result[0]["parts"][0]
+        # Output should be decoded from JSON string to dict
+        assert isinstance(tool_part["output"], dict)
+        assert tool_part["output"] == {"result": 3, "status": "success"}
+
+    def test_tool_output_non_json_string(self):
+        """Test that non-JSON tool output remains as string."""
+        messages = [
+            AIMessage(
+                content="",
+                tool_calls=[
+                    {
+                        "id": "call-1",
+                        "name": "echo",
+                        "args": {"text": "hello"},
+                    }
+                ],
+            ),
+            ToolMessage(
+                content="Plain text result",
+                tool_call_id="call-1",
+                name="echo",
+            ),
+        ]
+        result = convert_to_ui_messages(messages)
+
+        tool_part = result[0]["parts"][0]
+        # Output should remain as string
+        assert isinstance(tool_part["output"], str)
+        assert tool_part["output"] == "Plain text result"

@@ -13,6 +13,7 @@ Key transformations:
 3. System/user messages are converted to simple text-based UIMessages
 """
 
+import json
 from typing import Any, Dict, List, Sequence
 from langchain_core.messages import (
     AIMessage,
@@ -160,8 +161,8 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
 
     In Vercel AI SDK UIMessage format:
     - Multiple assistant responses and tool results are merged into one message
-    - Tool messages become tool-result parts in the content array
-    - Assistant text and tool calls are preserved as separate parts
+    - Tool messages are merged with their corresponding tool calls into single parts
+    - Each part contains both input and output for a tool call
 
     Args:
         block_messages: List of consecutive AIMessage and ToolMessage objects
@@ -170,6 +171,14 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
         UIMessage dictionary with role="assistant"
     """
     parts: List[Dict[str, Any]] = []
+    # Build a map of tool_call_id -> ToolMessage for merging
+    tool_results: Dict[str, ToolMessage] = {}
+
+    for msg in block_messages:
+        if isinstance(msg, ToolMessage):
+            tool_call_id = getattr(msg, "tool_call_id", "")
+            if tool_call_id:
+                tool_results[tool_call_id] = msg
 
     for msg in block_messages:
         if isinstance(msg, AIMessage):
@@ -177,21 +186,27 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
             if msg.content and isinstance(msg.content, str):
                 parts.append({"type": "text", "text": msg.content})
 
-            # Add tool calls if present
+            # Add tool calls if present, merging with their results
             if hasattr(msg, "tool_calls") and msg.tool_calls:
                 for tool_call in msg.tool_calls:
-                    # Create tool-call part (Vercel's tool invocation format)
-                    parts.append({
-                        "type": f"tool-{tool_call.get('name', 'unknown')}",
-                        "toolCallId": tool_call.get("id", ""),
-                        "toolName": tool_call.get("name", ""),
-                        "input": tool_call.get("args", {}),
-                        "state": "output-available",  # Default state
-                    })
+                    tool_call_id = tool_call.get("id", "")
+                    tool_name = tool_call.get("name", "unknown")
 
-        elif isinstance(msg, ToolMessage):
-            # Tool message becomes a tool-result part
-            parts.append(_convert_tool_message_to_part(msg))
+                    # Create merged tool part with both input and output
+                    tool_part: Dict[str, Any] = {
+                        "type": f"tool-{tool_name}",
+                        "toolCallId": tool_call_id,
+                        "toolName": tool_name,
+                        "input": tool_call.get("args", {}),
+                        "state": "output-available",
+                    }
+
+                    # Merge tool result if available
+                    if tool_call_id in tool_results:
+                        tool_msg = tool_results[tool_call_id]
+                        tool_part["output"] = _parse_tool_output(tool_msg.content)
+
+                    parts.append(tool_part)
 
     if not parts:
         # Fallback to empty text
@@ -200,9 +215,30 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
     return {"role": "assistant", "parts": parts}
 
 
+def _parse_tool_output(content: Any) -> Any:
+    """
+    Parse tool output, attempting JSON decode if content is a string.
+
+    Args:
+        content: Raw tool output content
+
+    Returns:
+        Parsed content (dict if valid JSON, otherwise original content)
+    """
+    if isinstance(content, str):
+        try:
+            return json.loads(content)
+        except (json.JSONDecodeError, TypeError):
+            return content
+    return content
+
+
 def _convert_tool_message_to_part(msg: ToolMessage) -> Dict[str, Any]:
     """
     Convert ToolMessage to a tool-result part.
+    
+    Note: This is used for orphaned ToolMessages only.
+    In normal cases, tool results are merged with their calls in _convert_assistant_block.
 
     Args:
         msg: LangChain ToolMessage
@@ -224,6 +260,6 @@ def _convert_tool_message_to_part(msg: ToolMessage) -> Dict[str, Any]:
         "type": f"tool-{tool_name}" if tool_name else "tool-result",
         "toolCallId": tool_call_id,
         "toolName": tool_name,
-        "output": msg.content,
+        "output": _parse_tool_output(msg.content),
         "state": "output-available",
     }

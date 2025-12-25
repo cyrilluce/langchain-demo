@@ -55,6 +55,8 @@ def example_tool_calling() -> None:
 
     ui_messages = convert_to_ui_messages(messages)
     print(json.dumps(ui_messages, indent=2, ensure_ascii=False))
+    print("\nNote: Tool call and result are merged into a single part with both input and output.")
+    print("The JSON output is automatically decoded into a Python dict.")
 
 
 def example_multimodal() -> None:
