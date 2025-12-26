@@ -1,11 +1,9 @@
 """
-完整的 LangChain 到 Vercel AI SDK 流转换器
+完整的 LangChain 到 Vercel AI SDK 流转换器 (V2)
 
-将 LangChain agent 的 messages 流解析，根据消息类型分配到不同的转换器处理
-使用 asyncio.Queue 实现真正的实时流处理，同时保证输出顺序
+简化的实现，直接管理 step 生命周期
 """
 
-import asyncio
 from typing import Any, AsyncIterator
 
 from langchain_core.messages import AIMessageChunk, BaseMessage, ToolMessage
@@ -16,15 +14,20 @@ from .tool_converter import ToolStreamToVercelConverter
 
 class StreamToVercelConverter:
     """
-    完整的流转换器，协调 Model 和 Tool 转换器
+    完整的流转换器, 直接遍历消息流并管理 step 生命周期
 
-    使用 asyncio.Queue 实现实时处理，但按消息类型分段保证顺序：
-    - 同类型的连续消息立即流式处理
-    - 类型切换时确保前一个转换器完成后再开始下一个
+    Step 生命周期规则:
+    - 每个新的 AIMessage (通过 ID 识别) 开始一个新的 step
+    - 在开始新 step 之前, 先结束上一个 step
+    - ToolMessage 属于当前 step, 不触发 step 变化
+    - 流结束时关闭最后一个 step
     """
 
     def __init__(self) -> None:
-        pass
+        self.current_ai_id: str | None = None
+        self.step_started: bool = False
+        self.model_converter = ModelStreamToVercelConverter()
+        self.tool_converter = ToolStreamToVercelConverter()
 
     async def stream(
         self, stream: AsyncIterator[BaseMessage]
@@ -37,95 +40,41 @@ class StreamToVercelConverter:
 
         Yields:
             dict: Vercel AI SDK UIMessageChunk 格式的事件字典
-
-        实时流程：
-        1. 识别消息类型切换点
-        2. 对每段同类型消息启动转换器任务
-        3. 立即流式输出该段的转换结果
-        4. 下一段开始前确保上一段完成
         """
-        current_type: type[BaseMessage] | None = None
-        current_queue: asyncio.Queue[BaseMessage | None] | None = None
-        current_task: asyncio.Task | None = None
-        output_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+        async for msg in stream:
+            # 处理 AIMessageChunk
+            if isinstance(msg, AIMessageChunk):
+                # 检查是否是新的 AI 消息
+                if msg.id and msg.id != self.current_ai_id:
+                    # 结束上一个 step (如果存在)
+                    if self.step_started:
+                        yield {"type": "finish-step"}
 
-        async def process_segment(
-            input_queue: asyncio.Queue[BaseMessage | None],
-            converter_type: type[BaseMessage]
-        ) -> None:
-            """处理一段同类型的消息"""
-            async def segment_stream() -> AsyncIterator[BaseMessage]:
-                while True:
-                    msg = await input_queue.get()
-                    if msg is None:
-                        break
+                    # 开始新的 step
+                    yield {"type": "start-step"}
+                    self.current_ai_id = msg.id
+                    self.step_started = True
+
+                # 处理 AI 消息内容
+                async def single_msg_stream() -> AsyncIterator[BaseMessage]:
                     yield msg
 
-            try:
-                if converter_type == AIMessageChunk:
-                    converter = ModelStreamToVercelConverter()
-                    async for event in converter.stream(segment_stream()):
-                        await output_queue.put(event)
-                elif converter_type == ToolMessage:
-                    converter = ToolStreamToVercelConverter()
-                    async for event in converter.stream(segment_stream()):
-                        await output_queue.put(event)
-            except Exception as e:
-                print(f"[Converter Error]: {e}")
-            finally:
-                await output_queue.put(None)  # 标记该段完成
-
-        async def consume_output() -> AsyncIterator[dict[str, Any]]:
-            """持续消费输出队列并 yield 事件"""
-            while True:
-                event = await output_queue.get()
-                if event is None:
-                    break
-                yield event
-
-        # 主循环：处理输入流
-        async for msg in stream:
-            msg_type = type(msg)
-
-            # 如果消息类型改变，完成当前段并启动新段
-            if current_type != msg_type:
-                # 完成当前段
-                if current_queue is not None:
-                    await current_queue.put(None)  # 发送结束信号
-                    if current_task is not None:
-                        # 输出当前段的所有事件
-                        async for event in consume_output():
-                            yield event
-                        # 等待任务完成
-                        await current_task
-
-                # 启动新段
-                current_type = msg_type
-                current_queue = asyncio.Queue()
-                current_task = asyncio.create_task(
-                    process_segment(current_queue, current_type)
-                )
-
-            # 将消息放入当前队列（立即处理）
-            if current_queue is not None:
-                await current_queue.put(msg)
-
-                # 立即尝试输出已处理的事件（非阻塞）
-                while not output_queue.empty():
-                    try:
-                        event = output_queue.get_nowait()
-                        if event is None:
-                            # 如果收到结束标记，放回去等待后续处理
-                            await output_queue.put(None)
-                            break
+                async for event in self.model_converter.stream(single_msg_stream()):
+                    # 过滤掉 model_converter 可能发出的 step 事件
+                    if event.get("type") not in ["start-step", "finish-step"]:
                         yield event
-                    except asyncio.QueueEmpty:
-                        break
 
-        # 完成最后一段
-        if current_queue is not None:
-            await current_queue.put(None)
-            if current_task is not None:
-                async for event in consume_output():
-                    yield event
-                await current_task
+            # 处理 ToolMessage
+            elif isinstance(msg, ToolMessage):
+                # Tool 消息属于当前 step, 直接输出内容
+                async def single_tool_stream() -> AsyncIterator[BaseMessage]:
+                    yield msg
+
+                async for event in self.tool_converter.stream(single_tool_stream()):
+                    # 过滤掉 tool_converter 可能发出的 step 事件
+                    if event.get("type") not in ["start-step", "finish-step"]:
+                        yield event
+
+        # 流结束, 关闭最后一个 step
+        if self.step_started:
+            yield {"type": "finish-step"}

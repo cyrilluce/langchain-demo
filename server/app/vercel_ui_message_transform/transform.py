@@ -163,6 +163,7 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
     - Multiple assistant responses and tool results are merged into one message
     - Tool messages are merged with their corresponding tool calls into single parts
     - Each part contains both input and output for a tool call
+    - step-start parts mark the beginning of each step
 
     Args:
         block_messages: List of consecutive AIMessage and ToolMessage objects
@@ -180,8 +181,12 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
             if tool_call_id:
                 tool_results[tool_call_id] = msg
 
+    # 处理每个 AIMessage，每个 AIMessage 代表一个新的 step
     for msg in block_messages:
         if isinstance(msg, AIMessage):
+            # 添加 step-start part 标记新步骤的开始
+            parts.append({"type": "step-start"})
+
             # Add text content if present
             if msg.content and isinstance(msg.content, str):
                 parts.append({"type": "text", "text": msg.content})
@@ -209,7 +214,8 @@ def _convert_assistant_block(block_messages: Sequence[BaseMessage]) -> Dict[str,
                     parts.append(tool_part)
 
     if not parts:
-        # Fallback to empty text
+        # Fallback to empty text with step-start
+        parts.append({"type": "step-start"})
         parts.append({"type": "text", "text": ""})
 
     return {"role": "assistant", "parts": parts}

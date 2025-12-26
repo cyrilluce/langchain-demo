@@ -49,9 +49,9 @@ class TestConvertToUIMessages:
 
         assert len(result) == 1
         assert result[0]["role"] == "assistant"
-        assert result[0]["parts"] == [
-            {"type": "text", "text": "I'm doing well, thank you!"}
-        ]
+        assert len(result[0]["parts"]) == 2
+        assert result[0]["parts"][0] == {"type": "step-start"}
+        assert result[0]["parts"][1] == {"type": "text", "text": "I'm doing well, thank you!"}
 
     def test_conversation_sequence(self):
         """Test conversion of a typical conversation sequence."""
@@ -89,11 +89,12 @@ class TestConvertToUIMessages:
 
         assert len(result) == 1
         assert result[0]["role"] == "assistant"
-        assert len(result[0]["parts"]) == 2
-        assert result[0]["parts"][0]["type"] == "text"
-        assert result[0]["parts"][1]["type"] == "tool-get_weather"
-        assert result[0]["parts"][1]["toolCallId"] == "call-1"
-        assert result[0]["parts"][1]["input"] == {"city": "San Francisco"}
+        assert len(result[0]["parts"]) == 3
+        assert result[0]["parts"][0] == {"type": "step-start"}
+        assert result[0]["parts"][1]["type"] == "text"
+        assert result[0]["parts"][2]["type"] == "tool-get_weather"
+        assert result[0]["parts"][2]["toolCallId"] == "call-1"
+        assert result[0]["parts"][2]["input"] == {"city": "San Francisco"}
 
     def test_assistant_with_tool_message(self):
         """Test merging of tool messages into assistant message."""
@@ -120,14 +121,17 @@ class TestConvertToUIMessages:
         # as single part with output
         assert len(result) == 1
         assert result[0]["role"] == "assistant"
-        assert len(result[0]["parts"]) == 2  # text + merged tool part
+        assert len(result[0]["parts"]) == 3  # step-start + text + merged tool part
+
+        # Check step-start
+        assert result[0]["parts"][0] == {"type": "step-start"}
 
         # Check text part
-        assert result[0]["parts"][0]["type"] == "text"
-        assert result[0]["parts"][0]["text"] == "Checking weather..."
+        assert result[0]["parts"][1]["type"] == "text"
+        assert result[0]["parts"][1]["text"] == "Checking weather..."
 
         # Check merged tool part
-        tool_part = result[0]["parts"][1]
+        tool_part = result[0]["parts"][2]
         assert tool_part["type"] == "tool-get_weather"
         assert tool_part["toolCallId"] == "call-1"
         assert tool_part["input"] == {"city": "Tokyo"}
@@ -147,10 +151,14 @@ class TestConvertToUIMessages:
         # All consecutive assistant messages merged into one
         assert len(result) == 1
         assert result[0]["role"] == "assistant"
-        assert len(result[0]["parts"]) == 3
-        assert result[0]["parts"][0]["text"] == "First response."
-        assert result[0]["parts"][1]["text"] == "Second response."
-        assert result[0]["parts"][2]["text"] == "Third response."
+        # 3 messages × (step-start + text) = 6 parts
+        assert len(result[0]["parts"]) == 6
+        assert result[0]["parts"][0] == {"type": "step-start"}
+        assert result[0]["parts"][1]["text"] == "First response."
+        assert result[0]["parts"][2] == {"type": "step-start"}
+        assert result[0]["parts"][3]["text"] == "Second response."
+        assert result[0]["parts"][4] == {"type": "step-start"}
+        assert result[0]["parts"][5]["text"] == "Third response."
 
     def test_orphaned_tool_message(self):
         """Test handling of tool message without preceding assistant message."""
@@ -240,7 +248,9 @@ class TestConvertAssistantBlock:
         result = _convert_assistant_block(messages)
 
         assert result["role"] == "assistant"
-        assert result["parts"] == [{"type": "text", "text": "Hello!"}]
+        assert len(result["parts"]) == 2
+        assert result["parts"][0] == {"type": "step-start"}
+        assert result["parts"][1] == {"type": "text", "text": "Hello!"}
 
     def test_message_with_tool_calls(self):
         """Test conversion of message with tool calls."""
@@ -258,11 +268,12 @@ class TestConvertAssistantBlock:
         ]
         result = _convert_assistant_block(messages)
 
-        assert len(result["parts"]) == 2
-        assert result["parts"][0]["type"] == "text"
-        assert result["parts"][1]["type"] == "tool-calculator"
-        assert result["parts"][1]["toolCallId"] == "tc-1"
-        assert result["parts"][1]["input"]["operation"] == "add"
+        assert len(result["parts"]) == 3
+        assert result["parts"][0] == {"type": "step-start"}
+        assert result["parts"][1]["type"] == "text"
+        assert result["parts"][2]["type"] == "tool-calculator"
+        assert result["parts"][2]["toolCallId"] == "tc-1"
+        assert result["parts"][2]["input"]["operation"] == "add"
 
     def test_block_with_tool_message(self):
         """Test conversion of block containing tool message."""
@@ -279,9 +290,10 @@ class TestConvertAssistantBlock:
         ]
         result = _convert_assistant_block(messages)
 
-        # Should have one merged tool part (not separate call and result)
-        assert len(result["parts"]) == 1
-        tool_part = result["parts"][0]
+        # Should have step-start + one merged tool part
+        assert len(result["parts"]) == 2
+        assert result["parts"][0] == {"type": "step-start"}
+        tool_part = result["parts"][1]
         assert tool_part["type"] == "tool-search"
         assert tool_part["toolCallId"] == "tc-1"
         assert tool_part["input"] == {"q": "test"}
@@ -294,9 +306,10 @@ class TestConvertAssistantBlock:
         result = _convert_assistant_block(messages)
 
         assert result["role"] == "assistant"
-        assert len(result["parts"]) == 1
-        assert result["parts"][0]["type"] == "text"
-        assert result["parts"][0]["text"] == ""
+        assert len(result["parts"]) == 2
+        assert result["parts"][0] == {"type": "step-start"}
+        assert result["parts"][1]["type"] == "text"
+        assert result["parts"][1]["text"] == ""
 
 
 class TestConvertToolMessageToPart:
@@ -351,7 +364,8 @@ class TestConvertToolMessageToPart:
         ]
         result = convert_to_ui_messages(messages)
 
-        tool_part = result[0]["parts"][0]
+        # parts[0] is step-start, parts[1] is the tool
+        tool_part = result[0]["parts"][1]
         # Output should be decoded from JSON string to dict
         assert isinstance(tool_part["output"], dict)
         assert tool_part["output"] == {"result": 3, "status": "success"}
@@ -377,7 +391,8 @@ class TestConvertToolMessageToPart:
         ]
         result = convert_to_ui_messages(messages)
 
-        tool_part = result[0]["parts"][0]
+        # parts[0] is step-start, parts[1] is the tool
+        tool_part = result[0]["parts"][1]
         # Output should remain as string
         assert isinstance(tool_part["output"], str)
         assert tool_part["output"] == "Plain text result"
