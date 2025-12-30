@@ -6,6 +6,7 @@ Tests that verify the correct handling of start-step and finish-step in streamin
 
 import pytest
 from langchain_core.messages import AIMessageChunk, ToolMessage
+from langgraph.types import StateSnapshot
 
 from app.vercel_ui_message_stream.converter import StreamToVercelConverter
 
