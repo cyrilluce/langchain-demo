@@ -23,7 +23,7 @@ class TestStreamStateSnapshot:
         {
             "type": "data-checkpoint",
             "transient": True,
-            "checkpoint": {"id": "xxx", "parent": "xxx"}
+            "data": {"id": "xxx", "parent": "xxx"}
         }
         """
         async def mock_stream():
@@ -61,9 +61,9 @@ class TestStreamStateSnapshot:
         event = events[0]
         assert event["type"] == "data-checkpoint"
         assert event["transient"] is True
-        assert "checkpoint" in event
-        assert event["checkpoint"]["id"] == "checkpoint-123"
-        assert event["checkpoint"]["parent"] == "checkpoint-parent"
+        assert "data" in event
+        assert event["data"]["id"] == "checkpoint-123"
+        assert event["data"]["parent"] == "checkpoint-parent"
 
     @pytest.mark.asyncio
     async def test_state_snapshot_custom_converter(self):
@@ -216,8 +216,8 @@ class TestStreamStateSnapshot:
         assert len(events) == 1
         event = events[0]
         assert event["type"] == "data-checkpoint"
-        assert event["checkpoint"]["id"] == "chk-no-parent"
-        assert event["checkpoint"]["parent"] is None
+        assert event["data"]["id"] == "chk-no-parent"
+        assert event["data"]["parent"] is None
 
     @pytest.mark.asyncio
     async def test_state_snapshot_without_config(self):
@@ -246,8 +246,8 @@ class TestStreamStateSnapshot:
         event = events[0]
         assert event["type"] == "data-checkpoint"
         # Should fallback to "unknown"
-        assert event["checkpoint"]["id"] == "unknown"
-        assert event["checkpoint"]["parent"] is None
+        assert event["data"]["id"] == "unknown"
+        assert event["data"]["parent"] is None
 
     @pytest.mark.asyncio
     async def test_multiple_snapshots_in_stream(self):
@@ -294,10 +294,10 @@ class TestStreamStateSnapshot:
         assert len(checkpoint_events) == 2
 
         # Verify checkpoint IDs
-        assert checkpoint_events[0]["checkpoint"]["id"] == "chk-1"
-        assert checkpoint_events[0]["checkpoint"]["parent"] is None
-        assert checkpoint_events[1]["checkpoint"]["id"] == "chk-2"
-        assert checkpoint_events[1]["checkpoint"]["parent"] == "chk-1"
+        assert checkpoint_events[0]["data"]["id"] == "chk-1"
+        assert checkpoint_events[0]["data"]["parent"] is None
+        assert checkpoint_events[1]["data"]["id"] == "chk-2"
+        assert checkpoint_events[1]["data"]["parent"] == "chk-1"
 
         # Verify step lifecycle (one start, one finish)
         start_steps = [t for t in event_types if t == "start-step"]

@@ -12,7 +12,7 @@
 {
     "type": "data-checkpoint",
     "transient": True,
-    "checkpoint": {
+    "data": {
         "id": "checkpoint-id-from-config",
         "parent": "parent-checkpoint-id-or-null"
     }
@@ -61,7 +61,7 @@ def custom_checkpoint_converter(snapshot: StateSnapshot) -> dict:
     return {
         "type": "custom-checkpoint",
         "transient": True,
-        "checkpoint": {
+        "data": {
             "id": snapshot.config.get("configurable", {}).get("checkpoint_id"),
             "parent": (
                 snapshot.parent_config.get("configurable", {}).get("checkpoint_id")

@@ -26,7 +26,7 @@ class StreamToVercelConverter:
 
     def __init__(
         self,
-        checkpoint_converter: Callable[[StateSnapshot], dict[str, Any]] | None = None,
+        checkpoint_converter: Callable[[StateSnapshot | dict[str, Any]], dict[str, Any]] | None = None,
     ) -> None:
         self.current_ai_id: str | None = None
         self.step_started: bool = False
@@ -37,7 +37,7 @@ class StreamToVercelConverter:
         )
 
     @staticmethod
-    def _default_checkpoint_converter(snapshot: StateSnapshot) -> dict[str, Any]:
+    def _default_checkpoint_converter(snapshot: StateSnapshot | dict[str, Any]) -> dict[str, Any]:
         """
         默认的 StateSnapshot 转换器
 
@@ -50,18 +50,25 @@ class StreamToVercelConverter:
         checkpoint_id = "unknown"
         parent_id = None
 
-        if snapshot.config:
-            configurable = snapshot.config.get("configurable", {})
+        if isinstance(snapshot, StateSnapshot):
+            config = snapshot.config
+            parent_config = snapshot.parent_config
+        elif isinstance(snapshot, dict):
+            config = snapshot.get('config')
+            parent_config = snapshot.get('parent_config')
+
+        if config:
+            configurable = config.get("configurable", {})
             checkpoint_id = configurable.get("checkpoint_id", "unknown")
 
-        if snapshot.parent_config:
-            parent_configurable = snapshot.parent_config.get("configurable", {})
+        if parent_config:
+            parent_configurable = parent_config.get("configurable", {})
             parent_id = parent_configurable.get("checkpoint_id")
 
         return {
             "type": "data-checkpoint",
             "transient": True,
-            "checkpoint": {"id": checkpoint_id, "parent": parent_id},
+            "data": {"id": checkpoint_id, "parent": parent_id},
         }
 
     async def stream(
@@ -77,12 +84,8 @@ class StreamToVercelConverter:
             dict: Vercel AI SDK UIMessageChunk 格式的事件字典
         """
         async for msg in stream:
-            # 处理 StateSnapshot
-            if isinstance(msg, StateSnapshot):
-                yield self.checkpoint_converter(msg)
-
             # 处理 AIMessageChunk
-            elif isinstance(msg, AIMessageChunk):
+            if isinstance(msg, AIMessageChunk):
                 # 检查是否是新的 AI 消息
                 if msg.id and msg.id != self.current_ai_id:
                     # 结束上一个 step (如果存在)
@@ -113,7 +116,9 @@ class StreamToVercelConverter:
                     # 过滤掉 tool_converter 可能发出的 step 事件
                     if event.get("type") not in ["start-step", "finish-step"]:
                         yield event
-
+            # 处理 StateSnapshot
+            elif isinstance(msg, StateSnapshot) or isinstance(msg, dict):
+                yield self.checkpoint_converter(msg)
         # 流结束, 关闭最后一个 step
         if self.step_started:
             yield {"type": "finish-step"}
