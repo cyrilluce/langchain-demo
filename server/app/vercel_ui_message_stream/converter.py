@@ -72,7 +72,7 @@ class StreamToVercelConverter:
         }
 
     async def stream(
-        self, stream: AsyncIterator[BaseMessage | StateSnapshot]
+        self, stream: AsyncIterator[BaseMessage | StateSnapshot | dict[str, Any]]
     ) -> AsyncIterator[dict[str, Any]]:
         """
         转换完整的 LangChain 消息流为 Vercel AI SDK 格式
